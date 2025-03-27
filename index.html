@@ -5,22 +5,508 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rejoice ❤️</title>
     <style>
-        /* [All previous CSS styles remain exactly the same] */
+        :root {
+            --primary: #ff6b81;
+            --secondary: #ff8e9e;
+            --light: #ffebee;
+            --dark: #d32f2f;
+            --text: #333;
+            --white: #fff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+            background-color: var(--white);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Welcome Animation */
+        #welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeOut 1s ease-in-out 3s forwards;
+        }
+        
+        .welcome-text {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--white);
+            text-align: center;
+            animation: bounceIn 1.5s ease-in-out, pulse 2s ease-in-out 1.5s infinite;
+            text-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            60% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+        
+        /* Profile Setup */
+        #profile-setup {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--white);
+            text-align: center;
+        }
+        
+        #profile-setup h1 {
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        #profile-image-container {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        #profile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        #profile-image-placeholder {
+            font-size: 50px;
+            color: var(--primary);
+        }
+        
+        #profile-image-input {
+            display: none;
+        }
+        
+        #profile-name {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 25px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            outline: none;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        #start-chatting {
+            background-color: var(--white);
+            color: var(--primary);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        #start-chatting:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Chat Container */
+        #chat-container {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        /* Header */
+        #chat-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        
+        #chat-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        #partner-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        #partner-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+        
+        /* Messages */
+        #messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: var(--light);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message {
+            max-width: 70%;
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .sent {
+            align-self: flex-end;
+            background-color: var(--primary);
+            color: var(--white);
+            border-top-right-radius: 5px;
+        }
+        
+        .received {
+            align-self: flex-start;
+            background-color: var(--white);
+            color: var(--text);
+            border-top-left-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .message-time {
+            font-size: 11px;
+            margin-top: 5px;
+            opacity: 0.8;
+            text-align: right;
+        }
+        
+        .image-message {
+            padding: 0;
+            background: none;
+            max-width: 250px;
+        }
+        
+        .message-image {
+            width: 100%;
+            border-radius: 12px;
+            display: block;
+        }
+        
+        /* Input Area */
+        #input-area {
+            display: flex;
+            padding: 10px;
+            background-color: var(--white);
+            border-top: 1px solid #eee;
+            align-items: center;
+        }
+        
+        #message-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px;
+            margin-right: 10px;
+            resize: none;
+            max-height: 120px;
+        }
+        
+        #send-button, #image-button {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--primary);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        #image-button {
+            background-color: var(--secondary);
+            margin-right: 10px;
+        }
+        
+        #send-button:hover, #image-button:hover {
+            transform: scale(1.05);
+        }
+        
+        #image-input {
+            display: none;
+        }
+        
+        /* Typing indicator */
+        .typing-indicator {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: var(--white);
+            border-radius: 18px;
+            margin-bottom: 15px;
+            align-self: flex-start;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .typing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text);
+            margin: 0 2px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+        
+        /* Heart animation */
+        .heart {
+            position: absolute;
+            pointer-events: none;
+            animation: floatUp 3s ease-in-out forwards;
+            opacity: 0.7;
+        }
+        
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 0.7; }
+            100% { transform: translateY(-100px) scale(1.2); opacity: 0; }
+        }
+        
+        /* Connection status */
+        #connection-status {
+            padding: 5px 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .connected { background: #4CAF50; }
+        .disconnected { background: #F44336; }
+        
+        /* QR Code Modal */
+        #qr-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        #qr-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 90%;
+        }
+        
+        #qr-title {
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        #qr-canvas {
+            margin: 0 auto;
+            max-width: 100%;
+        }
+        
+        #qr-url {
+            margin: 15px 0;
+            word-break: break-all;
+            font-size: 14px;
+        }
+        
+        #qr-close {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 400px) {
+            #profile-image-container {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .message {
+                max-width: 80%;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- [All previous HTML structure remains exactly the same] -->
+    <div id="app">
+        <!-- Welcome Animation -->
+        <div id="welcome-screen">
+            <div class="welcome-text">Welcome to Rejoice</div>
+        </div>
+        
+        <!-- Profile Setup Screen -->
+        <div id="profile-setup">
+            <h1>Welcome to Rejoice ❤️</h1>
+            <div id="profile-image-container" title="Click to upload profile picture">
+                <div id="profile-image-placeholder">👤</div>
+                <img id="profile-image" style="display: none;">
+                <input type="file" id="profile-image-input" accept="image/*">
+            </div>
+            <input type="text" id="profile-name" placeholder="Your name" maxlength="20">
+            <button id="start-chatting">Start Chatting</button>
+        </div>
+        
+        <!-- Chat Screen -->
+        <div id="chat-container">
+            <div id="chat-header">
+                <div id="partner-info">
+                    <img id="partner-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><circle cx='50' cy='40' r='20' fill='%23ff8e9e'/><circle cx='50' cy='100' r='40' fill='%23ff8e9e'/></svg>">
+                    <h2>Your Partner</h2>
+                </div>
+            </div>
+            
+            <div id="messages"></div>
+            
+            <div id="input-area">
+                <input type="file" id="image-input" accept="image/*">
+                <button id="image-button" title="Send image">📷</button>
+                <textarea id="message-input" placeholder="Type a message..." rows="1"></textarea>
+                <button id="send-button" title="Send message">➤</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Load PeerJS library first -->
+    <!-- QR Code Modal (initially hidden) -->
+    <div id="qr-modal" style="display: none;">
+        <div id="qr-content">
+            <div id="qr-title">Scan to join Rejoice</div>
+            <canvas id="qr-canvas"></canvas>
+            <div id="qr-url"></div>
+            <button id="qr-close">Close</button>
+        </div>
+    </div>
+
+    <!-- Load PeerJS library -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <!-- Load QR code library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     
     <script>
-        // DOM Elements (same as before)
+        // DOM Elements
         const profileSetup = document.getElementById('profile-setup');
         const chatContainer = document.getElementById('chat-container');
-        // ... [all other DOM element references remain the same]
-
-        // App State (same as before)
+        const profileImageContainer = document.getElementById('profile-image-container');
+        const profileImage = document.getElementById('profile-image');
+        const profileImagePlaceholder = document.getElementById('profile-image-placeholder');
+        const profileImageInput = document.getElementById('profile-image-input');
+        const profileName = document.getElementById('profile-name');
+        const startChattingBtn = document.getElementById('start-chatting');
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const imageButton = document.getElementById('image-button');
+        const imageInput = document.getElementById('image-input');
+        const partnerAvatar = document.getElementById('partner-avatar');
+        const qrModal = document.getElementById('qr-modal');
+        const qrCanvas = document.getElementById('qr-canvas');
+        const qrUrl = document.getElementById('qr-url');
+        const qrClose = document.getElementById('qr-close');
+        
+        // App State
         let myProfile = {
             name: '',
             avatar: ''
@@ -40,9 +526,9 @@
         let dataChannel;
         let isInitiator = false;
         let roomId = '';
-
-        // Initialize the app after PeerJS is loaded
-        function initApp() {
+        
+        // Initialize the app
+        function init() {
             // Check if profiles are set
             const savedProfile = JSON.parse(localStorage.getItem('rejoice_chat_profile'));
             if (savedProfile) {
@@ -51,9 +537,16 @@
                 initPeerConnection();
             }
             
-            // Set up event listeners (same as before)
+            // Set up event listeners
             profileImageContainer.addEventListener('click', () => profileImageInput.click());
-            // ... [all other event listeners remain the same]
+            profileImageInput.addEventListener('change', handleImageUpload);
+            startChattingBtn.addEventListener('click', startChatting);
+            messageInput.addEventListener('keydown', handleKeyDown);
+            messageInput.addEventListener('input', handleTyping);
+            sendButton.addEventListener('click', sendMessage);
+            imageButton.addEventListener('click', () => imageInput.click());
+            imageInput.addEventListener('change', handleImageSend);
+            qrClose.addEventListener('click', () => qrModal.style.display = 'none');
             
             // Load messages
             renderMessages();
@@ -61,10 +554,10 @@
             // Add some hearts for fun
             setInterval(createHeart, 3000);
         }
-
-        // Initialize PeerJS connection with secure config for GitHub Pages
+        
+        // Initialize PeerJS connection
         function initPeerConnection() {
-            // Create peer connection with secure configuration
+            // Create peer connection with secure configuration for GitHub Pages
             peer = new Peer({
                 secure: true,
                 host: 'peerjs-server.herokuapp.com',
@@ -82,14 +575,7 @@
                 if (!urlParams.get('room')) {
                     isInitiator = true;
                     window.history.pushState({}, '', `?room=${roomId}`);
-                    
-                    // Create a nicer share message
-                    const shareUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-                    const shareMessage = `Share this link with your partner:\n\n${shareUrl}\n\nOr scan this QR code:`;
-                    alert(shareMessage);
-                    
-                    // Generate QR code
-                    generateQRCode(shareUrl);
+                    showQRCode(`${window.location.href}`);
                 }
                 
                 connectToRoom();
@@ -101,49 +587,22 @@
                 alert('Connection error. Please refresh the page and try again.');
             });
         }
-
-        // Generate QR code for easy sharing
-        function generateQRCode(url) {
-            const qrContainer = document.createElement('div');
-            qrContainer.id = 'qr-container';
-            qrContainer.style.position = 'fixed';
-            qrContainer.style.top = '50%';
-            qrContainer.style.left = '50%';
-            qrContainer.style.transform = 'translate(-50%, -50%)';
-            qrContainer.style.backgroundColor = 'white';
-            qrContainer.style.padding = '20px';
-            qrContainer.style.borderRadius = '10px';
-            qrContainer.style.zIndex = '1001';
-            qrContainer.style.boxShadow = '0 0 20px rgba(0,0,0,0.3)';
-            qrContainer.style.textAlign = 'center';
-            
-            qrContainer.innerHTML = `
-                <p style="margin-bottom: 15px; font-weight: bold;">Scan to join Rejoice</p>
-                <canvas id="qr-code"></canvas>
-                <button id="close-qr" style="margin-top: 15px; padding: 8px 15px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
-            `;
-            
-            document.body.appendChild(qrContainer);
-            
-            // Load QR code library dynamically
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js';
-            script.onload = () => {
-                QRCode.toCanvas(document.getElementById('qr-code'), url, {
-                    width: 200,
-                    margin: 2
-                }, (error) => {
-                    if (error) console.error(error);
-                });
-            };
-            document.body.appendChild(script);
-            
-            // Close button
-            document.getElementById('close-qr').addEventListener('click', () => {
-                document.body.removeChild(qrContainer);
+        
+        function generateRoomId() {
+            return Math.random().toString(36).substring(2, 8);
+        }
+        
+        function showQRCode(url) {
+            qrUrl.textContent = url;
+            QRCode.toCanvas(qrCanvas, url, {
+                width: 200,
+                margin: 2
+            }, (error) => {
+                if (error) console.error(error);
+                qrModal.style.display = 'flex';
             });
         }
-
+        
         function connectToRoom() {
             if (isInitiator) {
                 // Create data channel when someone joins
@@ -161,22 +620,262 @@
                 setupDataConnection(conn);
             }
         }
-
-        // [All other functions remain the same as in previous versions...]
-        // setupDataConnection, updateConnectionStatus, handleImageUpload, 
-        // startChatting, showChatScreen, handleTyping, showTypingIndicator,
-        // hideTypingIndicator, handleKeyDown, sendMessage, handleImageSend,
-        // addMessage, saveMessages, renderMessages, createMessageElement,
-        // formatTime, createHeart, generateRoomId
-
-        // Start the app when PeerJS is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof Peer !== 'undefined') {
-                initApp();
+        
+        function setupDataConnection(conn) {
+            dataChannel = conn;
+            
+            conn.on('open', () => {
+                updateConnectionStatus('Connected', true);
+                
+                // Send profile info to partner
+                conn.send(JSON.stringify({
+                    type: 'profile',
+                    name: myProfile.name,
+                    avatar: myProfile.avatar
+                }));
+            });
+            
+            conn.on('close', () => {
+                updateConnectionStatus('Disconnected', false);
+            });
+            
+            conn.on('error', (err) => {
+                console.error('Connection error:', err);
+                updateConnectionStatus('Connection error', false);
+            });
+            
+            conn.on('data', (data) => {
+                const message = JSON.parse(data);
+                
+                if (message.type === 'profile') {
+                    // Update partner's profile
+                    partnerProfile.name = message.name;
+                    partnerProfile.avatar = message.avatar;
+                    document.querySelector('#chat-header h2').textContent = partnerProfile.name;
+                    if (partnerProfile.avatar) {
+                        partnerAvatar.src = partnerProfile.avatar;
+                    }
+                } else {
+                    // Add partner's message to chat
+                    const messageObj = {
+                        id: Date.now(),
+                        sender: 'partner',
+                        text: message.text,
+                        timestamp: new Date().toISOString(),
+                        type: 'text'
+                    };
+                    
+                    addMessage(messageObj);
+                }
+            });
+        }
+        
+        function updateConnectionStatus(text, isConnected) {
+            const statusElement = document.createElement('span');
+            statusElement.id = 'connection-status';
+            statusElement.textContent = text;
+            statusElement.className = isConnected ? 'connected' : 'disconnected';
+            
+            const existingStatus = document.getElementById('connection-status');
+            if (existingStatus) {
+                existingStatus.replaceWith(statusElement);
             } else {
-                alert('Error: PeerJS library failed to load. Please check your internet connection and refresh the page.');
+                document.getElementById('chat-header').appendChild(statusElement);
             }
-        });
+        }
+        
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    profileImage.src = event.target.result;
+                    profileImage.style.display = 'block';
+                    profileImagePlaceholder.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function startChatting() {
+            if (!profileName.value.trim()) {
+                alert('Please enter your name');
+                return;
+            }
+            
+            myProfile.name = profileName.value.trim();
+            myProfile.avatar = profileImage.src || '';
+            
+            localStorage.setItem('rejoice_chat_profile', JSON.stringify(myProfile));
+            showChatScreen();
+            initPeerConnection();
+        }
+        
+        function showChatScreen() {
+            profileSetup.style.display = 'none';
+            chatContainer.style.display = 'flex';
+        }
+        
+        function handleTyping() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            
+            if (!isTyping && this.value.trim()) {
+                isTyping = true;
+                showTypingIndicator();
+            }
+            
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                isTyping = false;
+                hideTypingIndicator();
+            }, 2000);
+        }
+        
+        function showTypingIndicator() {
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.id = 'typing-indicator';
+            typingIndicator.innerHTML = `
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            `;
+            messagesContainer.appendChild(typingIndicator);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+        
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text || !dataChannel) return;
+            
+            const message = {
+                id: Date.now(),
+                sender: 'me',
+                text: text,
+                timestamp: new Date().toISOString(),
+                type: 'text'
+            };
+            
+            // Send via data channel
+            dataChannel.send(JSON.stringify({
+                text: text,
+                type: 'message'
+            }));
+            
+            addMessage(message);
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+        }
+        
+        function handleImageSend(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const message = {
+                        id: Date.now(),
+                        sender: 'me',
+                        image: event.target.result,
+                        timestamp: new Date().toISOString(),
+                        type: 'image'
+                    };
+                    
+                    addMessage(message);
+                    
+                    // Send image via data channel (as URL)
+                    if (dataChannel) {
+                        dataChannel.send(JSON.stringify({
+                            type: 'image',
+                            image: event.target.result
+                        }));
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+            imageInput.value = '';
+        }
+        
+        function addMessage(message) {
+            messages.push(message);
+            saveMessages();
+            renderMessages();
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function saveMessages() {
+            localStorage.setItem('rejoice_chat_messages', JSON.stringify(messages));
+        }
+        
+        function renderMessages() {
+            messagesContainer.innerHTML = '';
+            
+            messages.forEach(msg => {
+                const messageElement = createMessageElement(msg);
+                messagesContainer.appendChild(messageElement);
+            });
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function createMessageElement(msg) {
+            const messageDiv = document.createElement('div');
+            
+            if (msg.type === 'text') {
+                messageDiv.className = `message ${msg.sender}`;
+                messageDiv.innerHTML = `
+                    ${msg.text}
+                    <div class="message-time">${formatTime(msg.timestamp)}</div>
+                `;
+            } else if (msg.type === 'image') {
+                messageDiv.className = `message ${msg.sender} image-message`;
+                messageDiv.innerHTML = `
+                    <img src="${msg.image}" class="message-image" alt="Sent image">
+                    <div class="message-time">${formatTime(msg.timestamp)}</div>
+                `;
+            }
+            
+            return messageDiv;
+        }
+        
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        function createHeart() {
+            if (!chatContainer.style.display || chatContainer.style.display === 'none') return;
+            
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.innerHTML = '❤️';
+            heart.style.left = `${10 + Math.random() * 80}%`;
+            heart.style.top = `${80 + Math.random() * 15}%`;
+            heart.style.fontSize = `${20 + Math.random() * 30}px`;
+            
+            document.getElementById('app').appendChild(heart);
+            
+            setTimeout(() => {
+                heart.remove();
+            }, 3000);
+        }
+        
+        // Start the app when everything is loaded
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
