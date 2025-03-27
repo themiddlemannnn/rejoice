@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Just Us ❤️</title>
+    <title>Just Us ❤️ - Real P2P Chat</title>
     <style>
         :root {
             --primary: #ff6b81;
@@ -39,8 +39,8 @@
             position: relative;
         }
         
-        /* Profile Setup */
-        #profile-setup {
+        /* Connection Setup */
+        #connection-setup {
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -48,10 +48,9 @@
             justify-content: center;
             height: 100%;
             text-align: center;
-            animation: fadeIn 0.5s ease;
         }
         
-        #profile-setup h1 {
+        #connection-setup h1 {
             color: var(--primary);
             margin-bottom: 30px;
             font-size: 28px;
@@ -67,29 +66,12 @@
             position: relative;
             border: 5px solid var(--primary);
             cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        #profile-preview:hover {
-            transform: scale(1.05);
         }
         
         #profile-preview img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-        }
-        
-        #profile-preview::after {
-            content: 'Tap to add photo';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            padding: 5px;
-            font-size: 14px;
         }
         
         #profile-name {
@@ -104,7 +86,19 @@
             text-align: center;
         }
         
-        #save-profile {
+        #connection-code {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px 15px;
+            border: 2px solid var(--primary);
+            border-radius: 30px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            outline: none;
+            text-align: center;
+        }
+        
+        .btn {
             background-color: var(--primary);
             color: white;
             border: none;
@@ -114,10 +108,19 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
             font-weight: bold;
+            margin: 5px;
+            width: 100%;
+            max-width: 300px;
         }
         
-        #save-profile:hover {
+        .btn:hover {
             background-color: #ff4757;
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
         }
         
         /* Chat Interface */
@@ -150,6 +153,17 @@
             margin-right: 10px;
             object-fit: cover;
             border: 2px solid white;
+        }
+        
+        .peer-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        #connection-status {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-left: 10px;
         }
         
         #chat-container {
@@ -197,10 +211,6 @@
             margin-top: 5px;
             cursor: pointer;
             transition: transform 0.3s ease;
-        }
-        
-        .message-img:hover {
-            transform: scale(1.03);
         }
         
         #input-area {
@@ -281,7 +291,7 @@
         
         /* Responsive adjustments */
         @media (max-width: 480px) {
-            #profile-setup h1 {
+            #connection-setup h1 {
                 font-size: 24px;
             }
             
@@ -298,15 +308,18 @@
 </head>
 <body>
     <div id="app">
-        <!-- Profile Setup Screen -->
-        <div id="profile-setup">
-            <h1>Welcome to Just Us ❤️</h1>
+        <!-- Connection Setup Screen -->
+        <div id="connection-setup">
+            <h1>Just Us ❤️</h1>
             <div id="profile-preview" onclick="document.getElementById('profile-upload').click()">
                 <img id="profile-image" src="" alt="Profile" style="display: none;">
             </div>
             <input type="file" id="profile-upload" accept="image/*" style="display: none;">
             <input type="text" id="profile-name" placeholder="Your name" required>
-            <button id="save-profile">Start Chatting</button>
+            <input type="text" id="connection-code" placeholder="Enter connection code">
+            <button id="start-connection" class="btn">Start New Chat</button>
+            <button id="join-connection" class="btn btn-secondary">Join Existing Chat</button>
+            <div id="connection-message" style="margin-top: 20px; color: var(--primary);"></div>
         </div>
         
         <!-- Chat Interface -->
@@ -316,15 +329,18 @@
                     <img id="header-profile-pic" class="profile-pic" src="" alt="Profile">
                     <h2 id="header-profile-name"></h2>
                 </div>
+                <div class="peer-info">
+                    <span id="connection-status">Connecting...</span>
+                </div>
             </header>
             
             <div id="chat-container"></div>
             
             <div id="input-area">
-                <input type="text" id="message-input" placeholder="Type a message...">
-                <button id="image-btn" title="Send image">📷</button>
+                <input type="text" id="message-input" placeholder="Type a message..." disabled>
+                <button id="image-btn" title="Send image" disabled>📷</button>
                 <input type="file" id="image-upload" accept="image/*" style="display: none;">
-                <button id="send-btn" title="Send message">➤</button>
+                <button id="send-btn" title="Send message" disabled>➤</button>
             </div>
         </div>
         
@@ -337,15 +353,19 @@
 
     <script>
         // DOM Elements
-        const profileSetup = document.getElementById('profile-setup');
+        const connectionSetup = document.getElementById('connection-setup');
         const chatInterface = document.getElementById('chat-interface');
         const profileUpload = document.getElementById('profile-upload');
         const profilePreview = document.getElementById('profile-preview');
         const profileImage = document.getElementById('profile-image');
         const profileNameInput = document.getElementById('profile-name');
-        const saveProfileBtn = document.getElementById('save-profile');
+        const connectionCodeInput = document.getElementById('connection-code');
+        const startConnectionBtn = document.getElementById('start-connection');
+        const joinConnectionBtn = document.getElementById('join-connection');
+        const connectionMessage = document.getElementById('connection-message');
         const headerProfilePic = document.getElementById('header-profile-pic');
         const headerProfileName = document.getElementById('header-profile-name');
+        const connectionStatus = document.getElementById('connection-status');
         const chatContainer = document.getElementById('chat-container');
         const messageInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
@@ -355,14 +375,19 @@
         const modalImage = document.getElementById('modal-image');
         const closeModal = document.getElementById('close-modal');
         
+        // WebRTC variables
+        let peerConnection;
+        let dataChannel;
+        let isInitiator = false;
+        let myProfile = {};
+        let peerProfile = {};
+        
         // Check if profile is already set
         document.addEventListener('DOMContentLoaded', () => {
             const savedProfile = localStorage.getItem('chatProfile');
             if (savedProfile) {
-                const profile = JSON.parse(savedProfile);
-                loadProfile(profile);
-                showChatInterface();
-                loadMessages();
+                myProfile = JSON.parse(savedProfile);
+                loadProfile(myProfile);
             }
         });
         
@@ -380,24 +405,6 @@
             }
         });
         
-        // Save profile
-        saveProfileBtn.addEventListener('click', () => {
-            const name = profileNameInput.value.trim();
-            if (!name) {
-                alert('Please enter your name');
-                return;
-            }
-            
-            const profile = {
-                name,
-                image: profileImage.src || ''
-            };
-            
-            localStorage.setItem('chatProfile', JSON.stringify(profile));
-            loadProfile(profile);
-            showChatInterface();
-        });
-        
         // Load profile
         function loadProfile(profile) {
             if (profile.image) {
@@ -406,13 +413,260 @@
                 profilePreview.style.background = 'none';
                 headerProfilePic.src = profile.image;
             }
-            headerProfileName.textContent = profile.name;
+            if (profile.name) {
+                headerProfileName.textContent = profile.name;
+            }
+        }
+        
+        // Start new connection (initiator)
+        startConnectionBtn.addEventListener('click', async () => {
+            const name = profileNameInput.value.trim();
+            if (!name) {
+                connectionMessage.textContent = 'Please enter your name';
+                return;
+            }
+            
+            // Save profile
+            myProfile = {
+                name,
+                image: profileImage.src || ''
+            };
+            localStorage.setItem('chatProfile', JSON.stringify(myProfile));
+            loadProfile(myProfile);
+            
+            // Generate connection code
+            const code = generateConnectionCode();
+            connectionCodeInput.value = code;
+            connectionMessage.textContent = `Share this code with your partner: ${code}`;
+            
+            // Initialize connection as initiator
+            isInitiator = true;
+            await setupPeerConnection();
+            
+            // Create data channel
+            dataChannel = peerConnection.createDataChannel('chat');
+            setupDataChannel(dataChannel);
+            
+            // Generate offer
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            
+            // For demo purposes, we'll simulate signaling
+            // In a real app, you'd need to share the offer/answer via some signaling method
+            // Here we'll just store it in localStorage to simulate signaling
+            localStorage.setItem('webrtcOffer', JSON.stringify({
+                code,
+                offer: peerConnection.localDescription
+            }));
+            
+            // Wait for answer
+            waitForAnswer(code);
+        });
+        
+        // Join existing connection (receiver)
+        joinConnectionBtn.addEventListener('click', async () => {
+            const name = profileNameInput.value.trim();
+            const code = connectionCodeInput.value.trim();
+            
+            if (!name) {
+                connectionMessage.textContent = 'Please enter your name';
+                return;
+            }
+            
+            if (!code) {
+                connectionMessage.textContent = 'Please enter a connection code';
+                return;
+            }
+            
+            // Save profile
+            myProfile = {
+                name,
+                image: profileImage.src || ''
+            };
+            localStorage.setItem('chatProfile', JSON.stringify(myProfile));
+            loadProfile(myProfile);
+            
+            // Initialize connection as receiver
+            isInitiator = false;
+            await setupPeerConnection();
+            
+            // Listen for data channel
+            peerConnection.ondatachannel = (event) => {
+                dataChannel = event.channel;
+                setupDataChannel(dataChannel);
+            };
+            
+            // Check for offer
+            const offerData = localStorage.getItem('webrtcOffer');
+            if (!offerData) {
+                connectionMessage.textContent = 'No active connection found with that code';
+                return;
+            }
+            
+            const { code: storedCode, offer } = JSON.parse(offerData);
+            if (code !== storedCode) {
+                connectionMessage.textContent = 'Invalid connection code';
+                return;
+            }
+            
+            // Set remote description
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+            
+            // Create answer
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            
+            // Store answer (simulating signaling)
+            localStorage.setItem('webrtcAnswer', JSON.stringify({
+                code,
+                answer: peerConnection.localDescription
+            }));
+            
+            // Show chat interface
+            showChatInterface();
+            connectionStatus.textContent = 'Connected';
+            enableChatInputs();
+        });
+        
+        // Wait for answer (initiator)
+        function waitForAnswer(code) {
+            const checkInterval = setInterval(async () => {
+                const answerData = localStorage.getItem('webrtcAnswer');
+                if (answerData) {
+                    const { code: storedCode, answer } = JSON.parse(answerData);
+                    if (code === storedCode) {
+                        clearInterval(checkInterval);
+                        
+                        // Set remote description
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+                        
+                        // Show chat interface
+                        showChatInterface();
+                        connectionStatus.textContent = 'Connected';
+                        enableChatInputs();
+                        
+                        // Send profile info
+                        sendProfileInfo();
+                    }
+                }
+            }, 1000);
+        }
+        
+        // Set up peer connection
+        async function setupPeerConnection() {
+            const configuration = {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' }
+                ]
+            };
+            
+            peerConnection = new RTCPeerConnection(configuration);
+            
+            // ICE candidate handling
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    // In a real app, you'd send this to the other peer
+                }
+            };
+            
+            peerConnection.onconnectionstatechange = () => {
+                if (peerConnection.connectionState === 'connected') {
+                    connectionStatus.textContent = 'Connected';
+                    enableChatInputs();
+                } else if (peerConnection.connectionState === 'disconnected') {
+                    connectionStatus.textContent = 'Disconnected';
+                    disableChatInputs();
+                }
+            };
+            
+            // For mobile devices, we need to handle negotiationneeded
+            peerConnection.onnegotiationneeded = async () => {
+                if (isInitiator) {
+                    const offer = await peerConnection.createOffer();
+                    await peerConnection.setLocalDescription(offer);
+                    // Store offer (simulating signaling)
+                    localStorage.setItem('webrtcOffer', JSON.stringify({
+                        code: connectionCodeInput.value,
+                        offer: peerConnection.localDescription
+                    }));
+                }
+            };
+        }
+        
+        // Set up data channel
+        function setupDataChannel(channel) {
+            channel.onopen = () => {
+                console.log('Data channel opened');
+                connectionStatus.textContent = 'Connected';
+                enableChatInputs();
+                
+                // Send profile info if we're the initiator
+                if (isInitiator) {
+                    sendProfileInfo();
+                }
+            };
+            
+            channel.onclose = () => {
+                console.log('Data channel closed');
+                connectionStatus.textContent = 'Disconnected';
+                disableChatInputs();
+            };
+            
+            channel.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                
+                if (message.type === 'profile') {
+                    // Received peer profile
+                    peerProfile = message.data;
+                    displaySystemMessage(`${peerProfile.name} has joined the chat`);
+                } else if (message.type === 'text') {
+                    // Received text message
+                    displayMessage({
+                        text: message.data,
+                        timestamp: new Date().toISOString(),
+                        type: 'received'
+                    });
+                } else if (message.type === 'image') {
+                    // Received image
+                    displayMessage({
+                        image: message.data,
+                        timestamp: new Date().toISOString(),
+                        type: 'received'
+                    });
+                }
+            };
+        }
+        
+        // Send profile info
+        function sendProfileInfo() {
+            if (dataChannel && dataChannel.readyState === 'open') {
+                dataChannel.send(JSON.stringify({
+                    type: 'profile',
+                    data: myProfile
+                }));
+            }
         }
         
         // Show chat interface
         function showChatInterface() {
-            profileSetup.style.display = 'none';
+            connectionSetup.style.display = 'none';
             chatInterface.style.display = 'flex';
+        }
+        
+        // Enable chat inputs
+        function enableChatInputs() {
+            messageInput.disabled = false;
+            sendBtn.disabled = false;
+            imageBtn.disabled = false;
+        }
+        
+        // Disable chat inputs
+        function disableChatInputs() {
+            messageInput.disabled = true;
+            sendBtn.disabled = true;
+            imageBtn.disabled = true;
         }
         
         // Send message
@@ -425,76 +679,47 @@
         
         function sendMessage() {
             const text = messageInput.value.trim();
-            if (!text) return;
+            if (!text || !dataChannel || dataChannel.readyState !== 'open') return;
             
-            const message = {
+            // Send via data channel
+            dataChannel.send(JSON.stringify({
+                type: 'text',
+                data: text
+            }));
+            
+            // Display locally
+            displayMessage({
                 text,
                 timestamp: new Date().toISOString(),
                 type: 'sent'
-            };
+            });
             
-            saveMessage(message);
-            displayMessage(message);
             messageInput.value = '';
-            
-            // Simulate received message after a delay
-            setTimeout(() => {
-                const reply = {
-                    text: getRandomReply(),
-                    timestamp: new Date().toISOString(),
-                    type: 'received'
-                };
-                saveMessage(reply);
-                displayMessage(reply);
-                scrollToBottom();
-            }, 1000 + Math.random() * 2000);
         }
         
-        // Image upload
+        // Send image
         imageBtn.addEventListener('click', () => imageUpload.click());
         imageUpload.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) {
+            if (file && dataChannel && dataChannel.readyState === 'open') {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    const message = {
+                    // Send via data channel
+                    dataChannel.send(JSON.stringify({
+                        type: 'image',
+                        data: event.target.result
+                    }));
+                    
+                    // Display locally
+                    displayMessage({
                         image: event.target.result,
                         timestamp: new Date().toISOString(),
                         type: 'sent'
-                    };
-                    
-                    saveMessage(message);
-                    displayMessage(message);
-                    
-                    // Simulate received image after a delay
-                    setTimeout(() => {
-                        const reply = {
-                            image: getRandomHeartImage(),
-                            timestamp: new Date().toISOString(),
-                            type: 'received'
-                        };
-                        saveMessage(reply);
-                        displayMessage(reply);
-                        scrollToBottom();
-                    }, 1000 + Math.random() * 2000);
+                    });
                 };
                 reader.readAsDataURL(file);
             }
         });
-        
-        // Save message to localStorage
-        function saveMessage(message) {
-            let messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
-            messages.push(message);
-            localStorage.setItem('chatMessages', JSON.stringify(messages));
-        }
-        
-        // Load messages from localStorage
-        function loadMessages() {
-            const messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
-            messages.forEach(message => displayMessage(message));
-            scrollToBottom();
-        }
         
         // Display message in chat
         function displayMessage(message) {
@@ -517,6 +742,20 @@
             scrollToBottom();
         }
         
+        // Display system message
+        function displaySystemMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system';
+            messageDiv.style.alignSelf = 'center';
+            messageDiv.style.backgroundColor = 'transparent';
+            messageDiv.style.color = 'var(--primary)';
+            messageDiv.style.fontSize = '12px';
+            messageDiv.style.margin = '10px 0';
+            messageDiv.textContent = text;
+            chatContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
         // Format time
         function formatTime(timestamp) {
             const date = new Date(timestamp);
@@ -528,6 +767,11 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
         
+        // Generate connection code
+        function generateConnectionCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+        
         // Image modal
         function showImageModal(src) {
             modalImage.src = src;
@@ -537,32 +781,6 @@
         closeModal.addEventListener('click', () => {
             imageModal.style.display = 'none';
         });
-        
-        // Random replies for simulation
-        function getRandomReply() {
-            const replies = [
-                "I love you! ❤️",
-                "What are you up to?",
-                "Miss you so much!",
-                "Can't wait to see you!",
-                "You're the best! 😘",
-                "Thinking about you...",
-                "How was your day?",
-                "You make me so happy!",
-                "Wish you were here with me",
-                "Sending you hugs! 🤗"
-            ];
-            return replies[Math.floor(Math.random() * replies.length)];
-        }
-        
-        // Random heart images for simulation
-        function getRandomHeartImage() {
-            const colors = ['ff6b81', 'ff8e9e', 'ff4757', 'ff6348', 'ff7f50', 'ff69b4', 'ff1493'];
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            
-            // Simple heart SVG
-            return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23${color}'><path d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/></svg>`;
-        }
     </script>
 </body>
 </html>
