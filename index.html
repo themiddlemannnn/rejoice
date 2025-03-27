@@ -3,751 +3,566 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P2P Chat</title>
-    <!-- PeerJS Library -->
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-
+    <title>Just Us ❤️</title>
     <style>
         :root {
-            --primary-bg: #f0f2f5;
-            --secondary-bg: #ffffff;
-            --accent-color: #007bff;
-            --text-color: #333;
-            --sent-bg: #dcf8c6;
-            --received-bg: #ffffff;
-            --border-color: #e0e0e0;
-            --error-color: #dc3545;
-            --success-color: #28a745;
+            --primary: #ff6b81;
+            --secondary: #ff8e9e;
+            --light: #fff6f7;
+            --dark: #3d3d3d;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        
+        * {
             margin: 0;
             padding: 0;
-            background-color: var(--primary-bg);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: var(--text-color);
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
-        .app-container {
-            width: 100%;
-            max-width: 450px;
-            height: 90vh;
-            max-height: 700px;
-            background-color: var(--secondary-bg);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
-        .screen {
+        
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+        }
+        
+        /* Profile Setup */
+        #profile-setup {
             padding: 20px;
             display: flex;
             flex-direction: column;
-            flex-grow: 1;
-        }
-        #profile-screen, #connect-screen, #chat-screen {
-            display: none; /* Initially hidden */
-        }
-        /* Common Styles */
-        h2, h3 {
+            align-items: center;
+            justify-content: center;
+            height: 100%;
             text-align: center;
-            color: var(--accent-color);
-            margin-top: 0;
+            animation: fadeIn 0.5s ease;
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+        
+        #profile-setup h1 {
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-size: 28px;
         }
-        input[type="text"], input[type="file"] {
-            width: calc(100% - 22px); /* Account for padding/border */
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 1rem;
+        
+        #profile-preview {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+            border: 5px solid var(--primary);
+            cursor: pointer;
+            transition: transform 0.3s ease;
         }
-        input[type="file"] {
-            padding: 3px;
+        
+        #profile-preview:hover {
+            transform: scale(1.05);
         }
-        button {
-            padding: 12px 20px;
-            background-color: var(--accent-color);
+        
+        #profile-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        #profile-preview::after {
+            content: 'Tap to add photo';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 5px;
+            font-size: 14px;
+        }
+        
+        #profile-name {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px 15px;
+            border: 2px solid var(--primary);
+            border-radius: 30px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            outline: none;
+            text-align: center;
+        }
+        
+        #save-profile {
+            background-color: var(--primary);
             color: white;
             border: none;
-            border-radius: 4px;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 16px;
             cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.2s ease;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        button:disabled {
-            background-color: #a0a0a0;
-            cursor: not-allowed;
-        }
-        .profile-pic-preview {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin: 10px auto;
-            display: block;
-            border: 2px solid var(--border-color);
-        }
-        .error-message {
-            color: var(--error-color);
-            font-size: 0.9em;
-            margin-top: -10px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        .status-message {
-            text-align: center;
-            margin: 10px 0;
-            font-style: italic;
-            color: #666;
-        }
-        /* Connect Screen Specific */
-        #my-peer-id-display {
-            background-color: var(--primary-bg);
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            word-wrap: break-word;
-            font-family: monospace;
-            font-size: 0.9em;
-            border: 1px dashed var(--border-color);
-        }
-        #my-peer-id-display strong {
+            transition: background-color 0.3s ease;
             font-weight: bold;
-            color: var(--accent-color);
         }
-
-        /* Chat Screen Specific */
-        #chat-screen {
-            padding: 0;
+        
+        #save-profile:hover {
+            background-color: #ff4757;
         }
-        .chat-header {
-            padding: 10px 15px;
-            background-color: var(--accent-color);
+        
+        /* Chat Interface */
+        #chat-interface {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        header {
+            background-color: var(--primary);
             color: white;
+            padding: 15px 20px;
             display: flex;
             align-items: center;
-            flex-shrink: 0;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+            z-index: 10;
         }
-        .chat-header img {
+        
+        .profile-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .profile-pic {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            object-fit: cover;
             margin-right: 10px;
-            border: 1px solid white;
+            object-fit: cover;
+            border: 2px solid white;
         }
-        .chat-header span {
-            font-weight: bold;
-        }
-         .connection-status {
-            margin-left: auto;
-            font-size: 0.8em;
-            opacity: 0.8;
-         }
-        .messages-area {
-            flex-grow: 1;
-            overflow-y: auto;
+        
+        #chat-container {
+            flex: 1;
             padding: 15px;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
         }
+        
         .message {
-            max-width: 75%;
-            padding: 8px 12px;
-            border-radius: 18px;
+            max-width: 70%;
+            padding: 10px 15px;
             margin-bottom: 10px;
-            display: flex;
-            flex-direction: column;
+            border-radius: 18px;
             word-wrap: break-word;
-            position: relative; /* For timestamp */
+            position: relative;
+            animation: fadeIn 0.3s ease;
         }
-        .message.sent {
-            background-color: var(--sent-bg);
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-        .message.received {
-            background-color: var(--received-bg);
+        
+        .received {
             align-self: flex-start;
-            border: 1px solid var(--border-color);
-            border-bottom-left-radius: 4px;
+            background-color: white;
+            color: var(--dark);
+            border-bottom-left-radius: 5px;
         }
-        .message img.msg-image {
+        
+        .sent {
+            align-self: flex-end;
+            background-color: var(--primary);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message-time {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .message-img {
             max-width: 100%;
-            max-height: 250px;
             border-radius: 10px;
             margin-top: 5px;
-            cursor: pointer; /* Optional: for opening full size */
+            cursor: pointer;
+            transition: transform 0.3s ease;
         }
-        .message-content {
-            margin-bottom: 15px; /* Space for timestamp */
+        
+        .message-img:hover {
+            transform: scale(1.03);
         }
-        .message-meta {
-            font-size: 0.7em;
-            color: #888;
-            position: absolute;
-            bottom: 4px;
-            right: 10px;
-         }
-        .message.received .message-meta {
-             right: auto;
-             left: 10px;
-         }
-        .chat-input-area {
+        
+        #input-area {
             display: flex;
             padding: 10px;
-            border-top: 1px solid var(--border-color);
-            background-color: var(--primary-bg);
-            flex-shrink: 0;
+            background-color: white;
+            border-top: 1px solid #eee;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
         }
-        .chat-input-area input[type="text"] {
-            flex-grow: 1;
-            margin: 0 5px 0 0;
-            padding: 10px;
+        
+        #message-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
         }
-        .chat-input-area button {
-            margin: 0 2px;
-            padding: 10px 15px;
-            white-space: nowrap;
+        
+        #message-input:focus {
+            border-color: var(--primary);
         }
-        #image-upload-label {
-            padding: 10px 15px;
-            background-color: #6c757d;
+        
+        #send-btn, #image-btn {
+            background-color: var(--primary);
             color: white;
             border: none;
-            border-radius: 4px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-left: 10px;
             cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.2s ease;
-            margin: 0 2px;
-            display: inline-block; /* Align with buttons */
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: background-color 0.3s ease;
         }
-        #image-upload-label:hover {
-            background-color: #5a6268;
+        
+        #send-btn:hover, #image-btn:hover {
+            background-color: #ff4757;
         }
-        #image-input {
+        
+        /* Image modal */
+        #image-modal {
             display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #modal-image {
+            max-width: 90%;
+            max-height: 90%;
+        }
+        
+        #close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            #profile-setup h1 {
+                font-size: 24px;
+            }
+            
+            #profile-preview {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .message {
+                max-width: 80%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-
-        <!-- 1. Profile Setup Screen -->
-        <div id="profile-screen" class="screen">
-            <h2>Set Your Profile</h2>
-            <img id="profile-pic-preview" class="profile-pic-preview" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAAAAACPAi4CAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA GklEQVRIx+2WMQ6AIAwE9f+Pb49MMEkQBHGIUrGU7kXJZV8DAwMDAwPzL45hYBHffhAR4ur/AxM4Z//7FwARmfjP+w8AAAAASUVORK5CYII=" alt="Profile Preview">
-            <label for="name-input">Your Name:</label>
-            <input type="text" id="name-input" placeholder="Enter your name">
-            <label for="profile-pic-input">Profile Picture:</label>
-            <input type="file" id="profile-pic-input" accept="image/*">
-            <div id="profile-error" class="error-message"></div>
-            <button id="save-profile-btn">Save Profile</button>
-        </div>
-
-        <!-- 2. Connection Screen -->
-        <div id="connect-screen" class="screen">
-            <h2>Connect to Friend</h2>
-            <div id="my-peer-id-display">Loading your ID...</div>
-            <div id="connection-status" class="status-message"></div>
-            <label for="friend-id-input">Friend's Peer ID:</label>
-            <input type="text" id="friend-id-input" placeholder="Enter friend's ID">
-            <button id="connect-btn" disabled>Connect</button>
-             <p style="font-size: 0.8em; text-align: center; margin-top: 15px; color: #666;">Share 'My Peer ID' with your friend and enter their ID above.</p>
-             <button id="change-profile-btn" style="background-color: #6c757d; margin-top: 20px;">Change Profile</button>
-        </div>
-
-        <!-- 3. Chat Screen -->
-        <div id="chat-screen" class="screen">
-            <div class="chat-header">
-                <img id="friend-pic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAAAAACPAi4CAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA GklEQVRIx+2WMQ6AIAwE9f+Pb49MMEkQBHGIUrGU7kXJZV8DAwMDAwPzL45hYBHffhAR4ur/AxM4Z//7FwARmfjP+w8AAAAASUVORK5CYII=" alt="Friend">
-                <span id="friend-name">Connecting...</span>
-                <span id="chat-connection-status" class="connection-status">Offline</span>
+    <div id="app">
+        <!-- Profile Setup Screen -->
+        <div id="profile-setup">
+            <h1>Welcome to Just Us ❤️</h1>
+            <div id="profile-preview" onclick="document.getElementById('profile-upload').click()">
+                <img id="profile-image" src="" alt="Profile" style="display: none;">
             </div>
-            <div class="messages-area" id="messages-area">
-                <!-- Messages will appear here -->
-            </div>
-            <div class="chat-input-area">
+            <input type="file" id="profile-upload" accept="image/*" style="display: none;">
+            <input type="text" id="profile-name" placeholder="Your name" required>
+            <button id="save-profile">Start Chatting</button>
+        </div>
+        
+        <!-- Chat Interface -->
+        <div id="chat-interface">
+            <header>
+                <div class="profile-info">
+                    <img id="header-profile-pic" class="profile-pic" src="" alt="Profile">
+                    <h2 id="header-profile-name"></h2>
+                </div>
+            </header>
+            
+            <div id="chat-container"></div>
+            
+            <div id="input-area">
                 <input type="text" id="message-input" placeholder="Type a message...">
-                <input type="file" id="image-input" accept="image/*">
-                <label for="image-input" id="image-upload-label" title="Send Image">️</label> <!-- Emoji for image -->
-                <button id="send-btn">Send</button>
+                <button id="image-btn" title="Send image">📷</button>
+                <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                <button id="send-btn" title="Send message">➤</button>
             </div>
         </div>
-
+        
+        <!-- Image Modal -->
+        <div id="image-modal">
+            <span id="close-modal">&times;</span>
+            <img id="modal-image" src="" alt="Full size image">
+        </div>
     </div>
 
     <script>
-        // --- Configuration ---
-        const DEFAULT_PROFILE_PIC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAAAAACPAi4CAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA GklEQVRIx+2WMQ6AIAwE9f+Pb49MMEkQBHGIUrGU7kXJZV8DAwMDAwPzL45hYBHffhAR4ur/AxM4Z//7FwARmfjP+w8AAAAASUVORK5CYII='; // Simple default avatar
-
-        // --- DOM Elements ---
-        const profileScreen = document.getElementById('profile-screen');
-        const connectScreen = document.getElementById('connect-screen');
-        const chatScreen = document.getElementById('chat-screen');
-
-        // Profile Screen Elements
-        const nameInput = document.getElementById('name-input');
-        const profilePicInput = document.getElementById('profile-pic-input');
-        const profilePicPreview = document.getElementById('profile-pic-preview');
-        const saveProfileBtn = document.getElementById('save-profile-btn');
-        const profileError = document.getElementById('profile-error');
-
-        // Connect Screen Elements
-        const myPeerIdDisplay = document.getElementById('my-peer-id-display');
-        const connectionStatus = document.getElementById('connection-status');
-        const friendIdInput = document.getElementById('friend-id-input');
-        const connectBtn = document.getElementById('connect-btn');
-        const changeProfileBtn = document.getElementById('change-profile-btn');
-
-        // Chat Screen Elements
-        const friendPic = document.getElementById('friend-pic');
-        const friendName = document.getElementById('friend-name');
-        const chatConnectionStatus = document.getElementById('chat-connection-status');
-        const messagesArea = document.getElementById('messages-area');
+        // DOM Elements
+        const profileSetup = document.getElementById('profile-setup');
+        const chatInterface = document.getElementById('chat-interface');
+        const profileUpload = document.getElementById('profile-upload');
+        const profilePreview = document.getElementById('profile-preview');
+        const profileImage = document.getElementById('profile-image');
+        const profileNameInput = document.getElementById('profile-name');
+        const saveProfileBtn = document.getElementById('save-profile');
+        const headerProfilePic = document.getElementById('header-profile-pic');
+        const headerProfileName = document.getElementById('header-profile-name');
+        const chatContainer = document.getElementById('chat-container');
         const messageInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
-        const imageInput = document.getElementById('image-input');
-
-        // --- App State ---
-        let peer = null;
-        let currentConnection = null;
-        let myPeerId = null;
-        let profile = {
-            name: '',
-            picture: DEFAULT_PROFILE_PIC // Data URL
-        };
-        let friendProfile = {
-            name: 'Friend',
-            picture: DEFAULT_PROFILE_PIC
-        };
-
-        // --- Utility Functions ---
-        function showScreen(screenElement) {
-            profileScreen.style.display = 'none';
-            connectScreen.style.display = 'none';
-            chatScreen.style.display = 'none';
-            screenElement.style.display = 'flex'; // Use flex for layout
-        }
-
-        function sanitizeInput(input) {
-             // Basic sanitization: remove HTML tags
-             const div = document.createElement('div');
-             div.textContent = input;
-             return div.innerHTML;
-        }
-
-        function displayMessage(sender, messageData, isMe) {
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('message', isMe ? 'sent' : 'received');
-
-            const contentDiv = document.createElement('div');
-            contentDiv.classList.add('message-content');
-
-            if (messageData.type === 'text') {
-                contentDiv.textContent = messageData.data;
-            } else if (messageData.type === 'image') {
-                const img = document.createElement('img');
-                img.src = messageData.data;
-                img.alt = "Image";
-                img.classList.add('msg-image');
-                // Optional: Add click to view larger? Requires more complex UI.
-                contentDiv.appendChild(img);
-            }
-
-            const metaDiv = document.createElement('div');
-            metaDiv.classList.add('message-meta');
-            metaDiv.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            msgDiv.appendChild(contentDiv);
-            msgDiv.appendChild(metaDiv);
-
-            messagesArea.appendChild(msgDiv);
-            messagesArea.scrollTop = messagesArea.scrollHeight; // Scroll to bottom
-        }
-
-        function updateConnectionStatus(statusText, isError = false) {
-             connectionStatus.textContent = statusText;
-             connectionStatus.style.color = isError ? 'var(--error-color)' : '#666';
-             chatConnectionStatus.textContent = peer && currentConnection && currentConnection.open ? 'Online' : 'Offline';
-             chatConnectionStatus.style.color = peer && currentConnection && currentConnection.open ? 'var(--success-color)' : 'rgba(255,255,255,0.7)';
-        }
-
-        // --- Profile Logic ---
-        function loadProfile() {
-            const savedProfile = localStorage.getItem('p2pchat_profile');
+        const imageBtn = document.getElementById('image-btn');
+        const imageUpload = document.getElementById('image-upload');
+        const imageModal = document.getElementById('image-modal');
+        const modalImage = document.getElementById('modal-image');
+        const closeModal = document.getElementById('close-modal');
+        
+        // Check if profile is already set
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedProfile = localStorage.getItem('chatProfile');
             if (savedProfile) {
-                profile = JSON.parse(savedProfile);
-                // Ensure default pic if saved one is invalid/missing
-                if (!profile.picture) profile.picture = DEFAULT_PROFILE_PIC;
-                profilePicPreview.src = profile.picture;
-                nameInput.value = profile.name;
-                return true;
+                const profile = JSON.parse(savedProfile);
+                loadProfile(profile);
+                showChatInterface();
+                loadMessages();
             }
-            profilePicPreview.src = profile.picture; // Show default initially
-            return false;
-        }
-
-        function saveProfile() {
-            const name = nameInput.value.trim();
-            if (!name) {
-                profileError.textContent = 'Please enter your name.';
-                return;
-            }
-            profile.name = sanitizeInput(name); // Sanitize name
-
-            // Picture is already updated by the preview handler
-            profileError.textContent = '';
-            localStorage.setItem('p2pchat_profile', JSON.stringify(profile));
-            console.log('Profile saved:', profile);
-            initializePeer(); // Proceed to connection setup
-        }
-
-        profilePicInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file && file.type.startsWith('image/')) {
+        });
+        
+        // Profile image upload
+        profileUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    profile.picture = e.target.result; // Store as Data URL
-                    profilePicPreview.src = profile.picture;
-                    profileError.textContent = '';
-                }
-                reader.onerror = () => {
-                    profileError.textContent = 'Error reading image file.';
-                    profile.picture = DEFAULT_PROFILE_PIC; // Reset on error
-                    profilePicPreview.src = profile.picture;
+                reader.onload = (event) => {
+                    profileImage.src = event.target.result;
+                    profileImage.style.display = 'block';
+                    profilePreview.style.background = 'none';
                 };
-                // Add size check (e.g., < 2MB) before reading if desired
-                const maxSizeMB = 2;
-                 if (file.size > maxSizeMB * 1024 * 1024) {
-                    profileError.textContent = `Image too large (max ${maxSizeMB}MB).`;
-                     profilePicInput.value = ''; // Clear selection
-                     return;
-                }
                 reader.readAsDataURL(file);
-            } else if (file) {
-                profileError.textContent = 'Please select a valid image file.';
-                profile.picture = DEFAULT_PROFILE_PIC; // Reset on invalid file
-                profilePicPreview.src = profile.picture;
             }
         });
-
-        saveProfileBtn.addEventListener('click', saveProfile);
-
-        changeProfileBtn.addEventListener('click', () => {
-            // Disconnect if connected? Or just allow changing profile?
-            // For simplicity, just go back to profile screen. User needs to reconnect.
-            if (currentConnection) {
-                currentConnection.close(); // Close existing connection if any
+        
+        // Save profile
+        saveProfileBtn.addEventListener('click', () => {
+            const name = profileNameInput.value.trim();
+            if (!name) {
+                alert('Please enter your name');
+                return;
             }
-            if (peer) {
-                peer.destroy(); // Destroy peer object to allow potential ID change if needed
-                peer = null;
-            }
-             // Clear displayed ID and status
-            myPeerIdDisplay.textContent = 'Loading your ID...';
-            updateConnectionStatus('Disconnected.');
-            connectBtn.disabled = true;
-            showScreen(profileScreen);
+            
+            const profile = {
+                name,
+                image: profileImage.src || ''
+            };
+            
+            localStorage.setItem('chatProfile', JSON.stringify(profile));
+            loadProfile(profile);
+            showChatInterface();
         });
-
-
-        // --- PeerJS Logic ---
-        function initializePeer() {
-            if (peer) {
-                console.log("Peer already initialized.");
-                showScreen(connectScreen); // Ensure connect screen is shown
-                updateConnectionStatus('Waiting for connection.'); // Update status
-                return;
+        
+        // Load profile
+        function loadProfile(profile) {
+            if (profile.image) {
+                profileImage.src = profile.image;
+                profileImage.style.display = 'block';
+                profilePreview.style.background = 'none';
+                headerProfilePic.src = profile.image;
             }
-
-            showScreen(connectScreen); // Show connect screen immediately
-            updateConnectionStatus('Initializing Peer...');
-
-            // Create a new Peer instance. Leave ID blank to get one from server.
-            // Using default PeerServer (cloud) and Google STUN servers.
-            peer = new Peer({
-                 // Optional: Add key: 'your-peerjs-api-key' if you deploy your own server
-                 // debug: 2 // 0: Errors, 1: Warnings, 2: Info, 3: Verbose Debug
-            });
-
-            peer.on('open', (id) => {
-                console.log('My PeerJS ID is:', id);
-                myPeerId = id;
-                myPeerIdDisplay.innerHTML = `My Peer ID: <strong id="my-id-val">${id}</strong>`;
-                // Add copy functionality
-                const idValElement = document.getElementById('my-id-val');
-                 if(idValElement) {
-                     idValElement.style.cursor = 'pointer';
-                     idValElement.title = 'Click to copy ID';
-                     idValElement.onclick = () => {
-                         navigator.clipboard.writeText(id).then(() => {
-                            myPeerIdDisplay.title = 'Copied!';
-                             setTimeout(() => { myPeerIdDisplay.title = ''; }, 1500);
-                         }).catch(err => console.error('Failed to copy ID: ', err));
-                     };
-                 }
-                updateConnectionStatus('Ready to connect.');
-                connectBtn.disabled = false;
-            });
-
-            peer.on('connection', (conn) => {
-                console.log('Incoming connection request from:', conn.peer);
-                if (currentConnection && currentConnection.open) {
-                     console.log("Already connected. Rejecting new connection from", conn.peer);
-                     conn.on('open', () => {
-                         conn.send({ type: 'system', data: 'busy' });
-                         setTimeout(() => conn.close(), 500); // Give time to send message
-                     });
-                     return;
-                 }
-                console.log('Accepting connection from:', conn.peer);
-                setupConnectionEvents(conn);
-                currentConnection = conn;
-                updateConnectionStatus(`Connected with ${conn.peer}`);
-            });
-
-            peer.on('disconnected', () => {
-                updateConnectionStatus('Disconnected from signaling server. Attempting to reconnect...', true);
-                // PeerJS attempts to reconnect automatically.
-                // Consider adding manual reconnect logic if needed.
-                myPeerIdDisplay.textContent = 'Reconnecting...';
-                connectBtn.disabled = true;
-            });
-
-            peer.on('close', () => {
-                updateConnectionStatus('Peer destroyed. Refresh page.', true);
-                console.log('Peer connection closed completely.');
-                peer = null;
-                myPeerId = null;
-                connectBtn.disabled = true;
-                showScreen(connectScreen); // Go back to connect screen
-            });
-
-            peer.on('error', (err) => {
-                console.error('PeerJS Error:', err);
-                let errorMsg = `Error: ${err.message || err.type}`;
-                // Handle specific common errors
-                if (err.type === 'unavailable-id') {
-                    errorMsg = "The requested ID is already taken. Please try a different one or let one be generated.";
-                } else if (err.type === 'network') {
-                    errorMsg = "Network error. Check connection or firewall.";
-                } else if (err.type === 'peer-unavailable') {
-                     errorMsg = `Could not connect to Peer ID: ${friendIdInput.value}. Ensure it's correct and friend is online.`;
-                 } else if (err.type === 'server-error') {
-                    errorMsg = "Error connecting to the signaling server.";
-                }
-                updateConnectionStatus(errorMsg, true);
-                // Optional: Attempt to cleanup or retry
-                 if (err.type !== 'peer-unavailable') { // Don't disable connect for peer unavailable
-                    connectBtn.disabled = true;
-                 }
-            });
+            headerProfileName.textContent = profile.name;
         }
-
-        function setupConnectionEvents(conn) {
-            conn.on('open', () => {
-                console.log('Connection established with:', conn.peer);
-                currentConnection = conn; // Ensure this is set
-                // Exchange profile info immediately after connection
-                sendProfileInfo(conn);
-                updateConnectionStatus(`Connected with ${conn.peer}`);
-                friendName.textContent = 'Connecting...'; // Reset friend name until profile received
-                friendPic.src = DEFAULT_PROFILE_PIC;     // Reset pic
-                showScreen(chatScreen);
-                messagesArea.innerHTML = ''; // Clear previous messages
-            });
-
-            conn.on('data', (data) => {
-                console.log('Data received:', data);
-                if (typeof data === 'object' && data.type) {
-                    switch (data.type) {
-                        case 'profile':
-                            friendProfile = data.data;
-                            // Ensure default pic if received one is invalid
-                            if (!friendProfile.picture) friendProfile.picture = DEFAULT_PROFILE_PIC;
-                            friendName.textContent = friendProfile.name || 'Friend';
-                            friendPic.src = friendProfile.picture;
-                            console.log('Received friend profile:', friendProfile);
-                            break;
-                        case 'text':
-                        case 'image':
-                            displayMessage(friendProfile.name, data, false);
-                            break;
-                        case 'system':
-                             if (data.data === 'busy') {
-                                 updateConnectionStatus('Friend is busy in another chat.', true);
-                                 conn.close(); // Close the connection attempt
-                             }
-                             break;
-                        default:
-                            console.log('Received unknown data structure:', data);
-                    }
-                } else {
-                     // Handle plain text messages if necessary, though structured is better
-                     console.log('Received unstructured data:', data);
-                     displayMessage(friendProfile.name, { type: 'text', data: String(data) }, false);
-                }
-            });
-
-            conn.on('close', () => {
-                console.log('Connection closed with:', conn.peer);
-                updateConnectionStatus(`Disconnected from ${conn.peer}.`);
-                friendName.textContent = 'Disconnected';
-                friendPic.src = DEFAULT_PROFILE_PIC;
-                currentConnection = null;
-                showScreen(connectScreen); // Go back to connect screen
-                 // Re-enable connect button if peer object still exists
-                 if (peer && !peer.destroyed) {
-                     connectBtn.disabled = false;
-                 }
-            });
-
-            conn.on('error', (err) => {
-                console.error('Connection error:', err);
-                updateConnectionStatus(`Connection error: ${err.message || err.type}`, true);
-                // Potentially close connection or show error message in chat
-            });
+        
+        // Show chat interface
+        function showChatInterface() {
+            profileSetup.style.display = 'none';
+            chatInterface.style.display = 'flex';
         }
-
-        function connectToPeer() {
-            const friendId = friendIdInput.value.trim();
-            if (!friendId) {
-                updateConnectionStatus('Please enter a Friend ID.', true);
-                return;
-            }
-            if (!peer || peer.destroyed) {
-                 updateConnectionStatus('Peer connection lost. Please refresh.', true);
-                 return;
-            }
-             if (currentConnection && currentConnection.open) {
-                 updateConnectionStatus('Already connected. Disconnect first.', true);
-                 return;
-             }
-
-            console.log('Attempting to connect to:', friendId);
-            updateConnectionStatus(`Connecting to ${friendId}...`);
-            connectBtn.disabled = true; // Disable while attempting
-
-            const conn = peer.connect(friendId, {
-                reliable: true // Use reliable SCTP data channels
-            });
-
-            // Setup events for the outgoing connection *before* it opens
-            setupConnectionEvents(conn);
-
-             // Handle the case where the connection fails immediately (e.g., peer unavailable)
-             // PeerJS might emit the 'error' on the peer object for this.
-             // Let the main peer error handler manage this.
-             setTimeout(() => {
-                // If after a few seconds, still no 'open' or 'error', re-enable button
-                if (!currentConnection && connectBtn.disabled) {
-                     // Check if an error wasn't already shown by peer.on('error')
-                    if (!connectionStatus.textContent.toLowerCase().includes('error') &&
-                        !connectionStatus.textContent.toLowerCase().includes('could not connect')) {
-                        updateConnectionStatus('Connection timed out or peer unavailable.', true);
-                    }
-                    connectBtn.disabled = false;
-                }
-            }, 10000); // 10 second timeout for connection attempt
-        }
-
-        connectBtn.addEventListener('click', connectToPeer);
-
-        // --- Chat Logic ---
-        function sendMessage() {
-            if (!currentConnection || !currentConnection.open) {
-                console.error("Cannot send message, not connected.");
-                // Optionally display an error to the user in the chat window
-                return;
-            }
-
-            const messageText = messageInput.value.trim();
-            if (messageText) {
-                const messageData = { type: 'text', data: sanitizeInput(messageText) }; // Sanitize text
-                currentConnection.send(messageData);
-                console.log('Sent:', messageData);
-                displayMessage('Me', messageData, true);
-                messageInput.value = ''; // Clear input field
-            }
-        }
-
-        function sendProfileInfo(conn) {
-             if (!conn || !conn.open) return;
-             const profileData = { type: 'profile', data: profile };
-             conn.send(profileData);
-             console.log('Sent profile info:', profileData);
-         }
-
-        function sendImage(file) {
-             if (!currentConnection || !currentConnection.open) {
-                 console.error("Cannot send image, not connected.");
-                 return;
-             }
-             if (file && file.type.startsWith('image/')) {
-                 const reader = new FileReader();
-                 reader.onload = (e) => {
-                     const imageDataUrl = e.target.result;
-                     // Basic check for extremely large data URLs (e.g., > 5MB string length)
-                      if (imageDataUrl.length > 5 * 1024 * 1024) {
-                         alert("Image might be too large to send reliably via Data URL. Try a smaller image.");
-                         // Don't send if too large? Or try anyway? Let's try anyway for now.
-                         // return;
-                     }
-                     const messageData = { type: 'image', data: imageDataUrl };
-                     currentConnection.send(messageData);
-                     console.log('Sent image data.');
-                     displayMessage('Me', messageData, true); // Display image locally immediately
-                 }
-                 reader.onerror = () => {
-                     console.error("Error reading image file for sending.");
-                     alert("Error processing image file.");
-                 };
-                 reader.readAsDataURL(file);
-             }
-         }
-
+        
+        // Send message
         sendBtn.addEventListener('click', sendMessage);
         messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 sendMessage();
             }
         });
-
-        imageInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-             if (file) {
-                sendImage(file);
-                 // Reset file input to allow sending the same file again if needed
-                 event.target.value = null;
-             }
-         });
-
-        // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
-            if (loadProfile()) {
-                // Profile exists, go to connection screen
-                initializePeer();
-            } else {
-                // No profile saved, show profile setup
-                showScreen(profileScreen);
+        
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+            
+            const message = {
+                text,
+                timestamp: new Date().toISOString(),
+                type: 'sent'
+            };
+            
+            saveMessage(message);
+            displayMessage(message);
+            messageInput.value = '';
+            
+            // Simulate received message after a delay
+            setTimeout(() => {
+                const reply = {
+                    text: getRandomReply(),
+                    timestamp: new Date().toISOString(),
+                    type: 'received'
+                };
+                saveMessage(reply);
+                displayMessage(reply);
+                scrollToBottom();
+            }, 1000 + Math.random() * 2000);
+        }
+        
+        // Image upload
+        imageBtn.addEventListener('click', () => imageUpload.click());
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const message = {
+                        image: event.target.result,
+                        timestamp: new Date().toISOString(),
+                        type: 'sent'
+                    };
+                    
+                    saveMessage(message);
+                    displayMessage(message);
+                    
+                    // Simulate received image after a delay
+                    setTimeout(() => {
+                        const reply = {
+                            image: getRandomHeartImage(),
+                            timestamp: new Date().toISOString(),
+                            type: 'received'
+                        };
+                        saveMessage(reply);
+                        displayMessage(reply);
+                        scrollToBottom();
+                    }, 1000 + Math.random() * 2000);
+                };
+                reader.readAsDataURL(file);
             }
         });
-
+        
+        // Save message to localStorage
+        function saveMessage(message) {
+            let messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
+            messages.push(message);
+            localStorage.setItem('chatMessages', JSON.stringify(messages));
+        }
+        
+        // Load messages from localStorage
+        function loadMessages() {
+            const messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
+            messages.forEach(message => displayMessage(message));
+            scrollToBottom();
+        }
+        
+        // Display message in chat
+        function displayMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.type}`;
+            
+            if (message.text) {
+                messageDiv.innerHTML = `
+                    ${message.text}
+                    <div class="message-time">${formatTime(message.timestamp)}</div>
+                `;
+            } else if (message.image) {
+                messageDiv.innerHTML = `
+                    <img src="${message.image}" class="message-img" onclick="showImageModal('${message.image}')">
+                    <div class="message-time">${formatTime(message.timestamp)}</div>
+                `;
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        // Format time
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // Scroll to bottom of chat
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Image modal
+        function showImageModal(src) {
+            modalImage.src = src;
+            imageModal.style.display = 'flex';
+        }
+        
+        closeModal.addEventListener('click', () => {
+            imageModal.style.display = 'none';
+        });
+        
+        // Random replies for simulation
+        function getRandomReply() {
+            const replies = [
+                "I love you! ❤️",
+                "What are you up to?",
+                "Miss you so much!",
+                "Can't wait to see you!",
+                "You're the best! 😘",
+                "Thinking about you...",
+                "How was your day?",
+                "You make me so happy!",
+                "Wish you were here with me",
+                "Sending you hugs! 🤗"
+            ];
+            return replies[Math.floor(Math.random() * replies.length)];
+        }
+        
+        // Random heart images for simulation
+        function getRandomHeartImage() {
+            const colors = ['ff6b81', 'ff8e9e', 'ff4757', 'ff6348', 'ff7f50', 'ff69b4', 'ff1493'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            // Simple heart SVG
+            return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23${color}'><path d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/></svg>`;
+        }
     </script>
 </body>
 </html>
