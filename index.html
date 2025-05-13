@@ -2,785 +2,875 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Just Us ❤️ - Real P2P Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>SwipeBuy - Prototype</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #ff6b81;
-            --secondary: #ff8e9e;
-            --light: #fff6f7;
-            --dark: #3d3d3d;
-            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --primary-color: #00AEEF;
+            --dark-bg: #121212;
+            --card-bg: #1E1E1E;
+            --text-primary: #E0E0E0;
+            --text-secondary: #A0A0A0;
+            --border-color: #333333;
+            --vignette-color: rgba(0, 0, 0, 0.7); /* Slightly stronger vignette */
+            --animation-speed-fast: 0.35s;
+            --animation-speed-medium: 0.5s;
+            --animation-speed-pop: 0.4s;
+            --pop-scale: 1.1; /* How much the current item "pops" */
+            --adjacent-scale: 0.9; /* Scale of prev/next items */
+            --adjacent-opacity: 0.6; /* Opacity of prev/next items */
+            --hidden-scale: 0.75; /* Scale of items further away */
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
-        
+
         body {
-            background-color: var(--light);
-            color: var(--dark);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
             overflow: hidden;
-        }
-        
-        #app {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            max-width: 600px;
-            margin: 0 auto;
-            width: 100%;
-            position: relative;
+            -webkit-tap-highlight-color: transparent;
         }
-        
-        /* Connection Setup */
-        #connection-setup {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            text-align: center;
-        }
-        
-        #connection-setup h1 {
-            color: var(--primary);
-            margin-bottom: 30px;
-            font-size: 28px;
-        }
-        
-        #profile-preview {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background-color: #ddd;
-            margin-bottom: 20px;
-            overflow: hidden;
-            position: relative;
-            border: 5px solid var(--primary);
-            cursor: pointer;
-        }
-        
-        #profile-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        #profile-name {
-            width: 100%;
-            max-width: 300px;
-            padding: 12px 15px;
-            border: 2px solid var(--primary);
-            border-radius: 30px;
-            font-size: 16px;
-            margin-bottom: 20px;
-            outline: none;
-            text-align: center;
-        }
-        
-        #connection-code {
-            width: 100%;
-            max-width: 300px;
-            padding: 12px 15px;
-            border: 2px solid var(--primary);
-            border-radius: 30px;
-            font-size: 16px;
-            margin-bottom: 20px;
-            outline: none;
-            text-align: center;
-        }
-        
-        .btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 30px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            font-weight: bold;
-            margin: 5px;
-            width: 100%;
-            max-width: 300px;
-        }
-        
-        .btn:hover {
-            background-color: #ff4757;
-        }
-        
-        .btn-secondary {
-            background-color: white;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-        
-        /* Chat Interface */
-        #chat-interface {
+
+        .app-screen {
             display: none;
             flex-direction: column;
             height: 100%;
-        }
-        
-        header {
-            background-color: var(--primary);
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: var(--shadow);
-            z-index: 10;
-        }
-        
-        .profile-info {
-            display: flex;
-            align-items: center;
-        }
-        
-        .profile-pic {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
-            object-fit: cover;
-            border: 2px solid white;
-        }
-        
-        .peer-info {
-            display: flex;
-            align-items: center;
-        }
-        
-        #connection-status {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-left: 10px;
-        }
-        
-        #chat-container {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .message {
-            max-width: 70%;
-            padding: 10px 15px;
-            margin-bottom: 10px;
-            border-radius: 18px;
-            word-wrap: break-word;
-            position: relative;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .received {
-            align-self: flex-start;
-            background-color: white;
-            color: var(--dark);
-            border-bottom-left-radius: 5px;
-        }
-        
-        .sent {
-            align-self: flex-end;
-            background-color: var(--primary);
-            color: white;
-            border-bottom-right-radius: 5px;
-        }
-        
-        .message-time {
-            font-size: 10px;
-            opacity: 0.7;
-            margin-top: 5px;
-            text-align: right;
-        }
-        
-        .message-img {
-            max-width: 100%;
-            border-radius: 10px;
-            margin-top: 5px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        #input-area {
-            display: flex;
-            padding: 10px;
-            background-color: white;
-            border-top: 1px solid #eee;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-        }
-        
-        #message-input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 30px;
-            font-size: 16px;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-        
-        #message-input:focus {
-            border-color: var(--primary);
-        }
-        
-        #send-btn, #image-btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            margin-left: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            transition: background-color 0.3s ease;
-        }
-        
-        #send-btn:hover, #image-btn:hover {
-            background-color: #ff4757;
-        }
-        
-        /* Image modal */
-        #image-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            z-index: 100;
-            justify-content: center;
-            align-items: center;
+            animation: screenFadeIn var(--animation-speed-medium) ease-out;
         }
-        
-        #modal-image {
-            max-width: 90%;
-            max-height: 90%;
+
+        .app-screen.active {
+            display: flex;
         }
-        
-        #close-modal {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            color: white;
-            font-size: 30px;
-            cursor: pointer;
-        }
-        
-        /* Animations */
-        @keyframes fadeIn {
+
+        @keyframes screenFadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+
+        /* --- Splash Screen --- */
+        #splash-screen {
+            justify-content: center;
+            align-items: center;
+            background-color: var(--dark-bg);
+        }
+
+        #splash-screen h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            animation: fadeInSplash 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @keyframes fadeInSplash {
+            0% { opacity: 0; transform: scale(0.7) rotate(-10deg); }
+            70% { opacity: 1; transform: scale(1.05) rotate(5deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+
+        /* --- Auth Screen (Signup/Login) --- */
+        #auth-screen {
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background-color: var(--card-bg);
+            padding: 30px 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            animation: authContainerAppear 0.6s ease-out 0.2s backwards;
+        }
+
+        @keyframes authContainerAppear {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+
+        .auth-container .logo {
+            width: 150px;
+            margin-bottom: 25px;
+        }
         
-        /* Responsive adjustments */
-        @media (max-width: 480px) {
-            #connection-setup h1 {
-                font-size: 24px;
-            }
-            
-            #profile-preview {
-                width: 120px;
-                height: 120px;
-            }
-            
-            .message {
-                max-width: 80%;
+        .auth-container h2 {
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .auth-form input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 30%, transparent);
+        }
+        
+        .auth-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .auth-button:hover {
+            background-color: #0098d4;
+            transform: translateY(-2px);
+        }
+        .auth-button:active {
+            transform: translateY(0px);
+        }
+
+        .auth-switch {
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .auth-switch a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .forgot-password {
+            display: block; 
+            text-align: right; 
+            font-size: 0.8rem;
+            margin-top: -10px; 
+            margin-bottom: 15px; 
+            color: var(--text-secondary);
+        }
+        .forgot-password a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+
+        /* --- Home Screen --- */
+        #home-screen {
+            /* Structure: Header, Main (Swipe), Footer */
+        }
+
+        .home-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: var(--card-bg); 
+            border-bottom: 1px solid var(--border-color);
+            min-height: 60px;
+            flex-shrink: 0; /* Prevent header from shrinking */
+        }
+
+        .home-header .logo {
+            height: 30px;
+            margin-right: 15px;
+        }
+
+        .category-filter {
+            background-color: var(--dark-bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            margin-right: 10px;
+            position: relative; 
+        }
+        .category-filter select {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            outline: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            padding-right: 15px; 
+        }
+        .category-filter i.fa-chevron-down {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none; 
+            font-size: 0.7rem;
+        }
+
+
+        .search-bar {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            background-color: var(--dark-bg);
+            border-radius: 20px;
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .search-bar input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            outline: none;
+            font-size: 0.9rem;
+        }
+        .search-bar input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-bar i.fa-search {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .profile-icon {
+            margin-left: 15px;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .profile-icon i {
+            color: var(--primary-color);
+        }
+        .profile-icon:hover i {
+            color: #00cfff; /* Brighter hover */
+        }
+
+
+        /* Swipe Area */
+        .swipe-area-wrapper {
+            flex-grow: 1; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; 
+            position: relative; 
+            padding: 20px 0; /* Increased padding for better visual separation */
+            perspective: 1000px; /* For 3D-like effects if desired */
+        }
+        
+        #swipe-container {
+            display: flex;
+            align-items: center; 
+            position: relative; 
+            width: 100%; 
+            height: 100%; 
+            user-select: none; 
+            -webkit-user-select: none;
+            touch-action: pan-y; 
+        }
+
+        .swipe-item {
+            position: absolute;
+            left: 50%; 
+            top: 50%; 
+            width: 70vw; /* Percentage based for responsiveness */
+            max-width: 300px; /* Max width */
+            aspect-ratio: 3 / 4.5; /* Maintain aspect ratio, taller for info */
+            background-color: var(--card-bg);
+            border-radius: 20px; /* Slightly more rounded */
+            box-shadow: 0 12px 35px rgba(0,0,0,0.6); 
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform-style: preserve-3d; /* For potential 3D rotations */
+            transition: transform var(--animation-speed-medium) cubic-bezier(0.34, 1.56, 0.64, 1), /* Springy pop */
+                        opacity var(--animation-speed-fast) ease-in-out,
+                        filter var(--animation-speed-fast) ease-in-out;
+            cursor: grab;
+            z-index: 1;
+            filter: brightness(0.9) saturate(0.9); /* Default slightly dimmed */
+        }
+        .swipe-item.grabbing {
+            cursor: grabbing;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+        }
+
+        .swipe-item-image-container {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden; 
+            background-color: #0a0a0a;
+        }
+        
+        .swipe-item-image-container::after { /* Vignette effect */
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            box-shadow: inset 0px 0px 60px 20px var(--vignette-color);
+            pointer-events: none; 
+            opacity: 0;
+            transition: opacity var(--animation-speed-pop) ease;
+        }
+
+        .swipe-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* IMPORTANT: Ensures full image is visible */
+            display: block; /* Remove extra space below image */
+            transition: transform 0.4s ease-out; /* Slight zoom on hover/focus */
+        }
+
+        .image-count {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            z-index: 2;
+            font-weight: 500;
+            backdrop-filter: blur(3px); /* Glassmorphism if supported */
+        }
+        .image-count i {
+            margin-right: 5px;
+        }
+
+        .swipe-item-info {
+            padding: 12px 15px; 
+            background-color: var(--card-bg); 
+            min-height: 85px; 
+            flex-shrink: 0;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .swipe-item-info h3 {
+            font-size: 1.15rem; 
+            margin-bottom: 4px;
+            color: var(--text-primary);
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .swipe-item-info .price {
+            font-size: 1.05rem; 
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .buy-button {
+            display: block;
+            width: 100%;
+            padding: 9px;
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem; 
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .buy-button:hover {
+            background-color: #0098d4;
+            transform: scale(1.03);
+        }
+         .buy-button:active {
+            transform: scale(1);
+        }
+
+
+        /* States for swipe items */
+        .swipe-item.current {
+            transform: translate(-50%, -50%) scale(var(--pop-scale)) rotateY(0deg) !important; 
+            opacity: 1 !important;
+            z-index: 3;
+            cursor: grab !important;
+            filter: brightness(1) saturate(1) !important; /* Full brightness for current */
+        }
+        .swipe-item.current .swipe-item-image-container::after { 
+            opacity: 1; /* Show vignette on current */
+        }
+        .swipe-item.current img {
+             /* transform: scale(1.02); Could add subtle zoom here */
+        }
+
+
+        .swipe-item.prev {
+            /* Positioned to the left, smaller, and slightly faded */
+            transform: translate(calc(-50% - 45vw), -50%) scale(var(--adjacent-scale)) rotateY(25deg) !important;
+            opacity: var(--adjacent-opacity) !important;
+            z-index: 2;
+            cursor: pointer !important; 
+        }
+
+        .swipe-item.next {
+            /* Positioned to the right, smaller, and slightly faded */
+            transform: translate(calc(-50% + 45vw), -50%) scale(var(--adjacent-scale)) rotateY(-25deg) !important;
+            opacity: var(--adjacent-opacity) !important;
+            z-index: 2;
+            cursor: pointer !important; 
+        }
+        
+        /* Hidden items are further out for a smoother animation in */
+        .swipe-item.hidden-left {
+            /* Further to the left, smaller, and fully transparent */
+            transform: translate(calc(-50% - 90vw), -50%) scale(var(--hidden-scale)) rotateY(45deg) !important; 
+            opacity: 0 !important;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .swipe-item.hidden-right {
+            /* Further to the right, smaller, and fully transparent */
+            transform: translate(calc(-50% + 90vw), -50%) scale(var(--hidden-scale)) rotateY(-45deg) !important; 
+            opacity: 0 !important;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Animation for item being swiped away (example) */
+        .swipe-item.swiping-out-left {
+            animation: swipeOutLeft var(--animation-speed-fast) forwards cubic-bezier(0.6, -0.28, 0.735, 0.045);
+        }
+        @keyframes swipeOutLeft {
+            to {
+                transform: translate(-150%, -50%) scale(0.8) rotate(-15deg);
+                opacity: 0;
             }
         }
+        .swipe-item.swiping-out-right {
+            animation: swipeOutRight var(--animation-speed-fast) forwards cubic-bezier(0.6, -0.28, 0.735, 0.045);
+        }
+        @keyframes swipeOutRight {
+            to {
+                transform: translate(50%, -50%) scale(0.8) rotate(15deg); /* Adjusted from 150% to 50% for visual */
+                opacity: 0;
+            }
+        }
+
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            min-height: 60px;
+            flex-shrink: 0; /* Prevent footer from shrinking */
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.7rem;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
+
+        .nav-item i {
+            font-size: 1.4rem;
+            margin-bottom: 3px;
+        }
+        
+        .nav-item.active, .nav-item:hover {
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+         .nav-item:active {
+            transform: translateY(0px);
+        }
+
     </style>
 </head>
 <body>
-    <div id="app">
-        <!-- Connection Setup Screen -->
-        <div id="connection-setup">
-            <h1>Just Us ❤️</h1>
-            <div id="profile-preview" onclick="document.getElementById('profile-upload').click()">
-                <img id="profile-image" src="" alt="Profile" style="display: none;">
-            </div>
-            <input type="file" id="profile-upload" accept="image/*" style="display: none;">
-            <input type="text" id="profile-name" placeholder="Your name" required>
-            <input type="text" id="connection-code" placeholder="Enter connection code">
-            <button id="start-connection" class="btn">Start New Chat</button>
-            <button id="join-connection" class="btn btn-secondary">Join Existing Chat</button>
-            <div id="connection-message" style="margin-top: 20px; color: var(--primary);"></div>
-        </div>
-        
-        <!-- Chat Interface -->
-        <div id="chat-interface">
-            <header>
-                <div class="profile-info">
-                    <img id="header-profile-pic" class="profile-pic" src="" alt="Profile">
-                    <h2 id="header-profile-name"></h2>
-                </div>
-                <div class="peer-info">
-                    <span id="connection-status">Connecting...</span>
-                </div>
-            </header>
+
+    <div id="splash-screen" class="app-screen active">
+        <h1>SwipeBuy</h1>
+    </div>
+
+    <div id="auth-screen" class="app-screen">
+        <div class="auth-container">
+            <img src="logo.png" alt="SwipeBuy Logo" class="logo" onerror="this.style.display='none'; this.parentElement.insertAdjacentHTML('afterbegin', '<h1 style=\'font-size: 2rem; color: var(--primary-color); margin-bottom:20px;\'>SwipeBuy</h1>')">
             
-            <div id="chat-container"></div>
-            
-            <div id="input-area">
-                <input type="text" id="message-input" placeholder="Type a message..." disabled>
-                <button id="image-btn" title="Send image" disabled>📷</button>
-                <input type="file" id="image-upload" accept="image/*" style="display: none;">
-                <button id="send-btn" title="Send message" disabled>➤</button>
+            <div id="signup-form-container">
+                <h2>Create Account</h2>
+                <form class="auth-form" onsubmit="return false;">
+                    <input type="text" placeholder="Username" required>
+                    <input type="email" placeholder="Email">
+                    <input type="password" placeholder="Password" required>
+                    <input type="password" placeholder="Confirm Password">
+                    <button type="submit" class="auth-button" onclick="showHomeScreen()">Sign Up</button>
+                </form>
             </div>
-        </div>
-        
-        <!-- Image Modal -->
-        <div id="image-modal">
-            <span id="close-modal">&times;</span>
-            <img id="modal-image" src="" alt="Full size image">
+
+            <div id="login-form-container" style="display: none;">
+                <h2>Welcome Back!</h2>
+                <form class="auth-form" onsubmit="return false;">
+                    <input type="text" placeholder="Username or Email" required>
+                    <input type="password" placeholder="Password" required>
+                    <div class="forgot-password">
+                        <a href="#" onclick="alert('Forgot Password clicked!')">Forgot Password?</a>
+                    </div>
+                    <button type="submit" class="auth-button" onclick="showHomeScreen()">Login</button>
+                </form>
+            </div>
+
+            <div class="auth-switch">
+                <span id="auth-switch-text">Already have an account? </span>
+                <a href="#" id="auth-switch-link" onclick="toggleAuthForms()">Login</a>
+            </div>
         </div>
     </div>
 
+    <div id="home-screen" class="app-screen">
+        <header class="home-header">
+            <img src="logo.png" alt="Logo" class="logo" onerror="this.style.display='none';">
+            <div class="category-filter">
+                <select id="categorySelect">
+                    <option value="all">All</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="clothes">Clothes</option>
+                    <option value="cars">Cars</option>
+                    <option value="house">House</option>
+                    <option value="toys">Toys</option>
+                </select>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="Search item...">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="profile-icon" onclick="alert('Profile clicked!')">
+                <i class="fas fa-user-circle"></i>
+            </div>
+        </header>
+
+        <main class="swipe-area-wrapper">
+            <div id="swipe-container">
+                </div>
+        </main>
+
+        <footer class="bottom-nav">
+            <a href="#" class="nav-item active" onclick="handleNavClick(event, 'home')">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="#" class="nav-item" onclick="handleNavClick(event, 'save')">
+                <i class="fas fa-heart"></i> Save
+            </a>
+            <a href="#" class="nav-item" onclick="handleNavClick(event, 'sell')">
+                <i class="fas fa-plus-square"></i> Sell
+            </a>
+            <a href="#" class="nav-item" onclick="handleNavClick(event, 'message')">
+                <i class="fas fa-comment-dots"></i> Message
+            </a>
+            <a href="#" class="nav-item" onclick="handleNavClick(event, 'cart')">
+                <i class="fas fa-shopping-cart"></i> Cart
+            </a>
+        </footer>
+    </div>
+
     <script>
-        // DOM Elements
-        const connectionSetup = document.getElementById('connection-setup');
-        const chatInterface = document.getElementById('chat-interface');
-        const profileUpload = document.getElementById('profile-upload');
-        const profilePreview = document.getElementById('profile-preview');
-        const profileImage = document.getElementById('profile-image');
-        const profileNameInput = document.getElementById('profile-name');
-        const connectionCodeInput = document.getElementById('connection-code');
-        const startConnectionBtn = document.getElementById('start-connection');
-        const joinConnectionBtn = document.getElementById('join-connection');
-        const connectionMessage = document.getElementById('connection-message');
-        const headerProfilePic = document.getElementById('header-profile-pic');
-        const headerProfileName = document.getElementById('header-profile-name');
-        const connectionStatus = document.getElementById('connection-status');
-        const chatContainer = document.getElementById('chat-container');
-        const messageInput = document.getElementById('message-input');
-        const sendBtn = document.getElementById('send-btn');
-        const imageBtn = document.getElementById('image-btn');
-        const imageUpload = document.getElementById('image-upload');
-        const imageModal = document.getElementById('image-modal');
-        const modalImage = document.getElementById('modal-image');
-        const closeModal = document.getElementById('close-modal');
+        // --- Screen Management ---
+        const splashScreen = document.getElementById('splash-screen');
+        const authScreen = document.getElementById('auth-screen');
+        const homeScreen = document.getElementById('home-screen');
         
-        // WebRTC variables
-        let peerConnection;
-        let dataChannel;
-        let isInitiator = false;
-        let myProfile = {};
-        let peerProfile = {};
-        
-        // Check if profile is already set
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedProfile = localStorage.getItem('chatProfile');
-            if (savedProfile) {
-                myProfile = JSON.parse(savedProfile);
-                loadProfile(myProfile);
-            }
-        });
-        
-        // Profile image upload
-        profileUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    profileImage.src = event.target.result;
-                    profileImage.style.display = 'block';
-                    profilePreview.style.background = 'none';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        // Load profile
-        function loadProfile(profile) {
-            if (profile.image) {
-                profileImage.src = profile.image;
-                profileImage.style.display = 'block';
-                profilePreview.style.background = 'none';
-                headerProfilePic.src = profile.image;
-            }
-            if (profile.name) {
-                headerProfileName.textContent = profile.name;
+        const signupFormContainer = document.getElementById('signup-form-container');
+        const loginFormContainer = document.getElementById('login-form-container');
+        const authSwitchText = document.getElementById('auth-switch-text');
+        const authSwitchLink = document.getElementById('auth-switch-link');
+
+        let isLoginFormVisible = false;
+
+        function showScreen(screenElement) {
+            document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+            screenElement.classList.add('active');
+        }
+
+        function toggleAuthForms() {
+            isLoginFormVisible = !isLoginFormVisible;
+            if (isLoginFormVisible) {
+                signupFormContainer.style.display = 'none';
+                loginFormContainer.style.display = 'block';
+                authSwitchText.textContent = "Don't have an account? ";
+                authSwitchLink.textContent = 'Sign Up';
+            } else {
+                signupFormContainer.style.display = 'block';
+                loginFormContainer.style.display = 'none';
+                authSwitchText.textContent = 'Already have an account? ';
+                authSwitchLink.textContent = 'Login';
             }
         }
-        
-        // Start new connection (initiator)
-        startConnectionBtn.addEventListener('click', async () => {
-            const name = profileNameInput.value.trim();
-            if (!name) {
-                connectionMessage.textContent = 'Please enter your name';
-                return;
-            }
+
+        function showHomeScreen() {
+            showScreen(homeScreen);
+            initSwipe(); 
+        }
+
+        // --- Product Data (Sample) ---
+        const products = [
+            { id: 1, name: "PlayStation 5 Console", price: "499.99", images: ["https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHM1fGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60"], imageCount: 3 },
+            { id: 2, name: "iPhone 15 Pro Max - Natural Titanium", price: "1199.00", images: ["https://images.unsplash.com/photo-1695026030034-01178993fb9f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aXBob25lJTIwMTUlMjBwcm8lMjBtYXh8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60"], imageCount: 4 },
+            { id: 3, name: "Vintage Leather Jacket", price: "220.50", images: ["https://images.unsplash.com/photo-1551028150-64b9f398f678?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8bGVhdGhlciUyMGphY2tldHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=600&q=60"], imageCount: 2 },
+            { id: 4, name: "NIKE Air Force 1 '07", price: "110.00", images: ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8c25lYWtlcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60"], imageCount: 5 },
+            { id: 5, name: "Sony WH-1000XM5 Headphones", price: "349.99", images: ["https://images.unsplash.com/photo-1627908023029-8d0601594e9f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8aGVhZHBob25lc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=600&q=60"], imageCount: 1 },
+            { id: 6, name: "Modern Minimalist Watch", price: "189.00", images: ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8d2F0Y2h8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60"], imageCount: 3 },
+            { id: 7, name: "Canon EOS R6 Mark II Camera", price: "2499.00", images: ["https://images.unsplash.com/photo-1519638831568-d9897f54ed69?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Y2FtZXJhfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60"], imageCount: 6 },
+        ];
+
+        // --- Swipe Logic ---
+        const swipeContainer = document.getElementById('swipe-container');
+        let currentItemIndex = 0;
+        let touchstartX = 0;
+        let touchendX = 0;
+        let isPointerDown = false; // Unified flag for touch and mouse
+        const SWIPE_THRESHOLD = 50; // Pixels to register a swipe
+
+        function createSwipeItemElement(product, index) {
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('swipe-item');
+            itemDiv.dataset.index = index; 
+
+            itemDiv.innerHTML = `
+                <div class="swipe-item-image-container">
+                    <img src="${product.images[0]}" alt="${product.name}" draggable="false" loading="lazy">
+                    <div class="image-count"><i class="fas fa-camera"></i> ${product.imageCount}</div>
+                </div>
+                <div class="swipe-item-info">
+                    <h3>${product.name}</h3>
+                    <p class="price">$${product.price}</p>
+                    <button class="buy-button" onclick="event.stopPropagation(); alert('Buy ${product.name} clicked!')">Buy Now</button>
+                </div>
+            `;
+            return itemDiv;
+        }
+
+        function navigateItems(direction) {
+            if (products.length <= 1) return;
+            const numProducts = products.length;
             
-            // Save profile
-            myProfile = {
-                name,
-                image: profileImage.src || ''
-            };
-            localStorage.setItem('chatProfile', JSON.stringify(myProfile));
-            loadProfile(myProfile);
-            
-            // Generate connection code
-            const code = generateConnectionCode();
-            connectionCodeInput.value = code;
-            connectionMessage.textContent = `Share this code with your partner: ${code}`;
-            
-            // Initialize connection as initiator
-            isInitiator = true;
-            await setupPeerConnection();
-            
-            // Create data channel
-            dataChannel = peerConnection.createDataChannel('chat');
-            setupDataChannel(dataChannel);
-            
-            // Generate offer
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            
-            // For demo purposes, we'll simulate signaling
-            // In a real app, you'd need to share the offer/answer via some signaling method
-            // Here we'll just store it in localStorage to simulate signaling
-            localStorage.setItem('webrtcOffer', JSON.stringify({
-                code,
-                offer: peerConnection.localDescription
-            }));
-            
-            // Wait for answer
-            waitForAnswer(code);
-        });
-        
-        // Join existing connection (receiver)
-        joinConnectionBtn.addEventListener('click', async () => {
-            const name = profileNameInput.value.trim();
-            const code = connectionCodeInput.value.trim();
-            
-            if (!name) {
-                connectionMessage.textContent = 'Please enter your name';
-                return;
-            }
-            
-            if (!code) {
-                connectionMessage.textContent = 'Please enter a connection code';
-                return;
-            }
-            
-            // Save profile
-            myProfile = {
-                name,
-                image: profileImage.src || ''
-            };
-            localStorage.setItem('chatProfile', JSON.stringify(myProfile));
-            loadProfile(myProfile);
-            
-            // Initialize connection as receiver
-            isInitiator = false;
-            await setupPeerConnection();
-            
-            // Listen for data channel
-            peerConnection.ondatachannel = (event) => {
-                dataChannel = event.channel;
-                setupDataChannel(dataChannel);
-            };
-            
-            // Check for offer
-            const offerData = localStorage.getItem('webrtcOffer');
-            if (!offerData) {
-                connectionMessage.textContent = 'No active connection found with that code';
-                return;
-            }
-            
-            const { code: storedCode, offer } = JSON.parse(offerData);
-            if (code !== storedCode) {
-                connectionMessage.textContent = 'Invalid connection code';
-                return;
-            }
-            
-            // Set remote description
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-            
-            // Create answer
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-            
-            // Store answer (simulating signaling)
-            localStorage.setItem('webrtcAnswer', JSON.stringify({
-                code,
-                answer: peerConnection.localDescription
-            }));
-            
-            // Show chat interface
-            showChatInterface();
-            connectionStatus.textContent = 'Connected';
-            enableChatInputs();
-        });
-        
-        // Wait for answer (initiator)
-        function waitForAnswer(code) {
-            const checkInterval = setInterval(async () => {
-                const answerData = localStorage.getItem('webrtcAnswer');
-                if (answerData) {
-                    const { code: storedCode, answer } = JSON.parse(answerData);
-                    if (code === storedCode) {
-                        clearInterval(checkInterval);
-                        
-                        // Set remote description
-                        await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-                        
-                        // Show chat interface
-                        showChatInterface();
-                        connectionStatus.textContent = 'Connected';
-                        enableChatInputs();
-                        
-                        // Send profile info
-                        sendProfileInfo();
+            // Animate current item out
+            const currentEl = swipeContainer.querySelector('.swipe-item.current');
+            if (currentEl) {
+                if (direction === 'next') {
+                    currentEl.classList.add('swiping-out-left');
+                } else {
+                    currentEl.classList.add('swiping-out-right');
+                }
+                // Remove animation class after it finishes to allow re-swiping
+                 setTimeout(() => {
+                    if (currentEl) { // Check if element still exists
+                        currentEl.classList.remove('swiping-out-left', 'swiping-out-right');
                     }
-                }
-            }, 1000);
-        }
-        
-        // Set up peer connection
-        async function setupPeerConnection() {
-            const configuration = {
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' },
-                    { urls: 'stun:stun2.l.google.com:19302' }
-                ]
-            };
-            
-            peerConnection = new RTCPeerConnection(configuration);
-            
-            // ICE candidate handling
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    // In a real app, you'd send this to the other peer
-                }
-            };
-            
-            peerConnection.onconnectionstatechange = () => {
-                if (peerConnection.connectionState === 'connected') {
-                    connectionStatus.textContent = 'Connected';
-                    enableChatInputs();
-                } else if (peerConnection.connectionState === 'disconnected') {
-                    connectionStatus.textContent = 'Disconnected';
-                    disableChatInputs();
-                }
-            };
-            
-            // For mobile devices, we need to handle negotiationneeded
-            peerConnection.onnegotiationneeded = async () => {
-                if (isInitiator) {
-                    const offer = await peerConnection.createOffer();
-                    await peerConnection.setLocalDescription(offer);
-                    // Store offer (simulating signaling)
-                    localStorage.setItem('webrtcOffer', JSON.stringify({
-                        code: connectionCodeInput.value,
-                        offer: peerConnection.localDescription
-                    }));
-                }
-            };
-        }
-        
-        // Set up data channel
-        function setupDataChannel(channel) {
-            channel.onopen = () => {
-                console.log('Data channel opened');
-                connectionStatus.textContent = 'Connected';
-                enableChatInputs();
-                
-                // Send profile info if we're the initiator
-                if (isInitiator) {
-                    sendProfileInfo();
-                }
-            };
-            
-            channel.onclose = () => {
-                console.log('Data channel closed');
-                connectionStatus.textContent = 'Disconnected';
-                disableChatInputs();
-            };
-            
-            channel.onmessage = (event) => {
-                const message = JSON.parse(event.data);
-                
-                if (message.type === 'profile') {
-                    // Received peer profile
-                    peerProfile = message.data;
-                    displaySystemMessage(`${peerProfile.name} has joined the chat`);
-                } else if (message.type === 'text') {
-                    // Received text message
-                    displayMessage({
-                        text: message.data,
-                        timestamp: new Date().toISOString(),
-                        type: 'received'
-                    });
-                } else if (message.type === 'image') {
-                    // Received image
-                    displayMessage({
-                        image: message.data,
-                        timestamp: new Date().toISOString(),
-                        type: 'received'
-                    });
-                }
-            };
-        }
-        
-        // Send profile info
-        function sendProfileInfo() {
-            if (dataChannel && dataChannel.readyState === 'open') {
-                dataChannel.send(JSON.stringify({
-                    type: 'profile',
-                    data: myProfile
-                }));
+                }, parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--animation-speed-fast') || '0.35') * 1000);
             }
-        }
-        
-        // Show chat interface
-        function showChatInterface() {
-            connectionSetup.style.display = 'none';
-            chatInterface.style.display = 'flex';
-        }
-        
-        // Enable chat inputs
-        function enableChatInputs() {
-            messageInput.disabled = false;
-            sendBtn.disabled = false;
-            imageBtn.disabled = false;
-        }
-        
-        // Disable chat inputs
-        function disableChatInputs() {
-            messageInput.disabled = true;
-            sendBtn.disabled = true;
-            imageBtn.disabled = true;
-        }
-        
-        // Send message
-        sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
+
+
+            if (direction === 'next') {
+                currentItemIndex = (currentItemIndex + 1) % numProducts;
+            } else if (direction === 'prev') {
+                currentItemIndex = (currentItemIndex - 1 + numProducts) % numProducts;
             }
-        });
+            // Add a small delay to let the "swipe out" animation start before re-rendering
+            setTimeout(() => {
+                 renderSwipeItems();
+            }, 50); // Small delay
+        }
+
+        function makePrevCurrent() {
+            navigateItems('prev');
+        }
+
+        function makeNextCurrent() {
+            navigateItems('next');
+        }
         
-        function sendMessage() {
-            const text = messageInput.value.trim();
-            if (!text || !dataChannel || dataChannel.readyState !== 'open') return;
+
+        function renderSwipeItems() {
+            swipeContainer.innerHTML = ''; 
+
+            const numProducts = products.length;
+            if (numProducts === 0) return;
+
+            // Determine which items to render (current, prev, next, and one hidden on each side for smoother animation)
+            // More items can be rendered if complex "carousel flow" animations are needed
+            const indicesToRender = new Set();
             
-            // Send via data channel
-            dataChannel.send(JSON.stringify({
-                type: 'text',
-                data: text
-            }));
+            if (numProducts === 1) {
+                indicesToRender.add(0);
+            } else if (numProducts === 2) {
+                indicesToRender.add(0);
+                indicesToRender.add(1);
+            } else { // 3 or more products
+                indicesToRender.add(currentItemIndex); // Current
+                indicesToRender.add((currentItemIndex - 1 + numProducts) % numProducts); // Prev
+                indicesToRender.add((currentItemIndex + 1) % numProducts); // Next
+                if (numProducts > 3) { // Add hidden items if we have enough
+                    indicesToRender.add((currentItemIndex - 2 + numProducts) % numProducts); // Hidden Left
+                    indicesToRender.add((currentItemIndex + 2) % numProducts); // Hidden Right
+                }
+            }
             
-            // Display locally
-            displayMessage({
-                text,
-                timestamp: new Date().toISOString(),
-                type: 'sent'
+            const fragment = document.createDocumentFragment();
+
+            // Ensure current is appended last to be on top initially (CSS z-index will manage final layering)
+            const orderedIndices = Array.from(indicesToRender).sort((a, b) => {
+                if (a === currentItemIndex) return 1;
+                if (b === currentItemIndex) return -1;
+                return 0; // Keep original relative order for others
             });
-            
-            messageInput.value = '';
+
+
+            orderedIndices.forEach(idx => {
+                const product = products[idx];
+                const itemEl = createSwipeItemElement(product, idx);
+                
+                if (idx === currentItemIndex) {
+                    itemEl.classList.add('current');
+                } else if (numProducts > 1 && idx === (currentItemIndex - 1 + numProducts) % numProducts) {
+                    itemEl.classList.add('prev');
+                    itemEl.addEventListener('click', makePrevCurrent);
+                } else if (numProducts > 1 && idx === (currentItemIndex + 1) % numProducts) {
+                    itemEl.classList.add('next');
+                    itemEl.addEventListener('click', makeNextCurrent);
+                } else if (numProducts > 2 && idx === (currentItemIndex - 2 + numProducts) % numProducts) {
+                    itemEl.classList.add('hidden-left');
+                } else if (numProducts > 2 && idx === (currentItemIndex + 2) % numProducts) {
+                    itemEl.classList.add('hidden-right');
+                }
+                fragment.appendChild(itemEl);
+            });
+            swipeContainer.appendChild(fragment);
         }
-        
-        // Send image
-        imageBtn.addEventListener('click', () => imageUpload.click());
-        imageUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file && dataChannel && dataChannel.readyState === 'open') {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    // Send via data channel
-                    dataChannel.send(JSON.stringify({
-                        type: 'image',
-                        data: event.target.result
-                    }));
-                    
-                    // Display locally
-                    displayMessage({
-                        image: event.target.result,
-                        timestamp: new Date().toISOString(),
-                        type: 'sent'
-                    });
-                };
-                reader.readAsDataURL(file);
+
+        function handleSwipeGesture() {
+            const deltaX = touchendX - touchstartX;
+            if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+                if (deltaX < 0) { 
+                    makeNextCurrent();
+                } else { 
+                    makePrevCurrent();
+                }
             }
-        });
-        
-        // Display message in chat
-        function displayMessage(message) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${message.type}`;
-            
-            if (message.text) {
-                messageDiv.innerHTML = `
-                    ${message.text}
-                    <div class="message-time">${formatTime(message.timestamp)}</div>
-                `;
-            } else if (message.image) {
-                messageDiv.innerHTML = `
-                    <img src="${message.image}" class="message-img" onclick="showImageModal('${message.image}')">
-                    <div class="message-time">${formatTime(message.timestamp)}</div>
-                `;
+        }
+
+        function initSwipe() {
+            if (products.length === 0) return;
+            renderSwipeItems();
+
+            let currentGrabbedItem = null;
+
+            function pointerDown(e) {
+                if (e.target.closest('.buy-button')) return; 
+                
+                const targetItem = e.target.closest('.swipe-item');
+                // Only allow swipe on the current item
+                if (!targetItem || !targetItem.classList.contains('current')) {
+                    // If prev/next are clicked directly, their own click handlers will work
+                    isPointerDown = false; 
+                    return;
+                }
+
+                touchstartX = e.type === 'touchstart' ? e.changedTouches[0].screenX : e.screenX;
+                isPointerDown = true;
+                currentGrabbedItem = targetItem;
+                if(currentGrabbedItem) currentGrabbedItem.classList.add('grabbing');
+                
+                // Prevent default only for touch to avoid interfering with scrolling if needed elsewhere
+                // and for mouse to prevent text selection/dragging images
+                if (e.type === 'touchstart' || e.type === 'mousedown') {
+                   // e.preventDefault(); // Be cautious with this, can disable scroll on swipe-area-wrapper if not handled carefully
+                }
             }
-            
-            chatContainer.appendChild(messageDiv);
-            scrollToBottom();
+
+            function pointerMove(e) {
+                if (!isPointerDown || !currentGrabbedItem) return;
+                // Optionally, implement real-time dragging effect here (more complex)
+                // For now, we just capture the end point.
+            }
+
+            function pointerUp(e) {
+                if (!isPointerDown || !currentGrabbedItem) {
+                    if(currentGrabbedItem) currentGrabbedItem.classList.remove('grabbing');
+                    isPointerDown = false; 
+                    currentGrabbedItem = null;
+                    return;
+                }
+                touchendX = e.type === 'touchend' ? e.changedTouches[0].screenX : e.screenX;
+                handleSwipeGesture();
+                
+                if(currentGrabbedItem) currentGrabbedItem.classList.remove('grabbing');
+                isPointerDown = false;
+                currentGrabbedItem = null;
+            }
+
+            // Touch events
+            swipeContainer.addEventListener('touchstart', pointerDown, { passive: true }); // passive:true if not preventing default
+            swipeContainer.addEventListener('touchmove', pointerMove, { passive: true });
+            swipeContainer.addEventListener('touchend', pointerUp);
+            swipeContainer.addEventListener('touchcancel', pointerUp); // Handle cancel
+
+            // Mouse events for desktop
+            swipeContainer.addEventListener('mousedown', pointerDown);
+            document.addEventListener('mousemove', pointerMove); // Listen on document for mousemove
+            document.addEventListener('mouseup', pointerUp);     // Listen on document for mouseup
         }
         
-        // Display system message
-        function displaySystemMessage(text) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message system';
-            messageDiv.style.alignSelf = 'center';
-            messageDiv.style.backgroundColor = 'transparent';
-            messageDiv.style.color = 'var(--primary)';
-            messageDiv.style.fontSize = '12px';
-            messageDiv.style.margin = '10px 0';
-            messageDiv.textContent = text;
-            chatContainer.appendChild(messageDiv);
-            scrollToBottom();
+
+        // --- Bottom Nav Handler ---
+        function handleNavClick(event, page) {
+            event.preventDefault(); 
+            alert(`${page.charAt(0).toUpperCase() + page.slice(1)} clicked!`);
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
         }
-        
-        // Format time
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-        
-        // Scroll to bottom of chat
-        function scrollToBottom() {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-        
-        // Generate connection code
-        function generateConnectionCode() {
-            return Math.random().toString(36).substring(2, 8).toUpperCase();
-        }
-        
-        // Image modal
-        function showImageModal(src) {
-            modalImage.src = src;
-            imageModal.style.display = 'flex';
-        }
-        
-        closeModal.addEventListener('click', () => {
-            imageModal.style.display = 'none';
-        });
+
+
+        // --- Initial Load ---
+        window.onload = () => {
+            setTimeout(() => {
+                 showScreen(authScreen); // Start with Auth screen after splash
+                // For quick testing of home screen:
+                // showScreen(homeScreen);
+                // initSwipe();
+            }, 1800); // Splash screen duration
+        };
+
     </script>
 </body>
 </html>
