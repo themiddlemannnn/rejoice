@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>SwipeBuy - Pop & Rounded UI (Complete)</title>
+    <title>SwipeBuy - Mobile Header Fix Test</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -34,21 +34,26 @@
             box-sizing: border-box;
         }
 
+        html {
+            height: 100%; /* Ensure html takes full height for body % height to work */
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--dark-bg);
             color: var(--text-primary);
-            overflow: hidden;
+            /* overflow: hidden;  <--- REMOVED THIS FOR TESTING HEADER VISIBILITY */
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            height: 100%; /* Changed from 100vh to 100% to work with html's height */
+            min-height: 100vh; /* As a fallback to ensure it at least tries for full viewport */
             -webkit-tap-highlight-color: transparent;
         }
 
         .app-screen {
             display: none;
             flex-direction: column;
-            height: 100%;
+            height: 100%; /* Occupy full height of parent (body or another app-screen if nested) */
             width: 100%;
             animation: screenFadeIn var(--animation-speed-medium) cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
@@ -80,28 +85,52 @@
         .forgot-password a { color: var(--text-secondary); text-decoration: none; }
         .forgot-password a:hover { text-decoration: underline; color: var(--primary-color); }
 
-        #home-screen { /* Basic structure */ }
-        .home-header { display: flex; align-items: center; padding: 12px 18px; background-color: var(--card-bg); border-bottom: 1px solid var(--border-color); min-height: 65px; flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .home-header .logo { height: 35px; margin-right: 18px; }
-        .category-filter { background-color: var(--dark-bg); color: var(--text-secondary); border: 1px solid var(--border-color); padding: 7px 10px; border-radius: 8px; font-size: 0.85rem; margin-right: 12px; position: relative; }
-        .category-filter select { background: transparent; color: var(--text-secondary); border: none; outline: none; -webkit-appearance: none; -moz-appearance: none; appearance: none; padding-right: 20px; }
-        .category-filter i.fa-chevron-down { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.75rem; }
-        .search-bar { flex-grow: 1; display: flex; align-items: center; background-color: var(--dark-bg); border-radius: 25px; padding: 8px 15px; border: 1px solid var(--border-color); transition: border-color 0.3s ease, box-shadow 0.3s ease; }
-        .search-bar:focus-within { border-color: var(--primary-color); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 20%, transparent); }
-        .search-bar input { flex-grow: 1; background: transparent; border: none; color: var(--text-primary); outline: none; font-size: 0.95rem; }
+        #home-screen {
+            /* This ensures the home screen itself is also a flex column taking full height */
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .home-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px; /* Adjusted for mobile */
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            min-height: 55px; /* Adjusted for mobile */
+            flex-shrink: 0; /* CRITICAL: Prevent header from shrinking */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        .home-header .logo { height: 30px; margin-right: 10px; } /* Adjusted for mobile */
+        .category-filter { background-color: var(--dark-bg); color: var(--text-secondary); border: 1px solid var(--border-color); padding: 6px 8px; border-radius: 6px; font-size: 0.8rem; margin-right: 8px; position: relative; }  /* Adjusted for mobile */
+        .category-filter select { background: transparent; color: var(--text-secondary); border: none; outline: none; -webkit-appearance: none; -moz-appearance: none; appearance: none; padding-right: 18px; } /* Adjusted for mobile */
+        .category-filter i.fa-chevron-down { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.7rem; } /* Adjusted for mobile */
+        .search-bar { flex-grow: 1; display: flex; align-items: center; background-color: var(--dark-bg); border-radius: 20px; padding: 6px 12px; border: 1px solid var(--border-color); transition: border-color 0.3s ease, box-shadow 0.3s ease; } /* Adjusted for mobile */
+        .search-bar:focus-within { border-color: var(--primary-color); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 20%, transparent); } /* Adjusted for mobile */
+        .search-bar input { flex-grow: 1; background: transparent; border: none; color: var(--text-primary); outline: none; font-size: 0.85rem; } /* Adjusted for mobile */
         .search-bar input::placeholder { color: var(--text-secondary); }
-        .search-bar i.fa-search { color: var(--text-secondary); font-size: 1rem; margin-left: 5px; }
-        .profile-icon { margin-left: 18px; font-size: 1.8rem; color: var(--text-secondary); cursor: pointer; transition: color 0.3s ease, transform 0.2s ease; background: none; border: none; padding: 0;}
+        .search-bar i.fa-search { color: var(--text-secondary); font-size: 0.9rem; margin-left: 5px; } /* Adjusted for mobile */
+        .profile-icon { margin-left: 10px; font-size: 1.6rem; color: var(--text-secondary); cursor: pointer; transition: color 0.3s ease, transform 0.2s ease; background: none; border: none; padding: 0;} /* Adjusted for mobile */
         .profile-icon i { color: var(--primary-color); transition: color 0.3s ease; }
         .profile-icon:hover i { color: var(--primary-color-hover); }
         .profile-icon:hover { transform: scale(1.1); }
 
-        .swipe-area-wrapper { flex-grow: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; padding: 20px 0; perspective: 1000px; }
+        .swipe-area-wrapper {
+            flex-grow: 1; /* CRITICAL: Allows main content to take remaining space */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Prevent its own content from breaking layout */
+            position: relative;
+            padding: 10px 0; /* Reduced padding for mobile */
+            perspective: 1000px;
+        }
         #swipe-container { display: flex; align-items: center; position: relative; width: 100%; height: 100%; user-select: none; -webkit-user-select: none; }
 
         .swipe-item {
             position: absolute; left: 50%; top: 50%;
-            width: 65vw; max-width: 280px;
+            width: 70vw; /* Adjusted for mobile, slightly larger relative width */
+            max-width: 260px; /* Slightly smaller max for mobile */
             aspect-ratio: 1 / 1.35;
             background-color: var(--card-bg);
             border-radius: var(--card-border-radius);
@@ -124,22 +153,22 @@
         .swipe-item-image-container { width: 100%; height: 65%; position: relative; overflow: hidden; background-color: #0a0a0a; border-top-left-radius: var(--card-border-radius); border-top-right-radius: var(--card-border-radius); }
         .swipe-item-image-container::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; box-shadow: inset 0px 0px 50px 15px var(--vignette-color); pointer-events: none; opacity: 0; transition: opacity var(--animation-speed-medium) ease; }
         .swipe-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease-in-out; }
-        .image-count { position: absolute; top: 15px; left: 15px; background-color: rgba(0,0,0,0.75); color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem; z-index: 2; font-weight: 500; backdrop-filter: blur(4px); }
-        .image-count i { margin-right: 6px; }
+        .image-count { position: absolute; top: 10px; left: 10px; background-color: rgba(0,0,0,0.7); color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; z-index: 2; font-weight: 500; backdrop-filter: blur(3px); } /* Adjusted for mobile */
+        .image-count i { margin-right: 5px; }
 
         .gallery-controls { position: absolute; top: 50%; left: 0; right: 0; display: flex; justify-content: space-between; transform: translateY(-50%); padding: 0 5px; z-index: 10; pointer-events: none; }
-        .gallery-arrow { background-color: rgba(0, 0, 0, 0.4); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s ease, transform 0.2s ease; pointer-events: all; opacity: 0.7; }
+        .gallery-arrow { background-color: rgba(0, 0, 0, 0.4); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s ease, transform 0.2s ease; pointer-events: all; opacity: 0.7; } /* Adjusted for mobile */
         .gallery-arrow:hover { background-color: rgba(0, 0, 0, 0.7); transform: scale(1.1); opacity: 1; }
         .gallery-arrow:focus-visible { outline: 2px solid var(--primary-color-hover); opacity: 1; }
-        .gallery-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 10; pointer-events: none; }
-        .gallery-dot { width: 8px; height: 8px; background-color: rgba(255, 255, 255, 0.4); border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease, transform 0.2s ease; pointer-events: all; }
+        .gallery-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 10; pointer-events: none; } /* Adjusted for mobile */
+        .gallery-dot { width: 7px; height: 7px; background-color: rgba(255, 255, 255, 0.4); border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease, transform 0.2s ease; pointer-events: all; } /* Adjusted for mobile */
         .gallery-dot.active { background-color: white; transform: scale(1.2); }
         .gallery-dot:focus-visible { outline: 2px solid var(--primary-color-hover); background-color: var(--primary-color-hover); }
 
-        .swipe-item-info { padding: 12px 15px; background-color: var(--card-bg); flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; border-bottom-left-radius: var(--card-border-radius); border-bottom-right-radius: var(--card-border-radius); border-top: 1px solid var(--border-color); }
-        .swipe-item-info h3 { font-size: 1.05rem; margin-bottom: 4px; color: var(--text-primary); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .swipe-item-info .price { font-size: 1rem; font-weight: bold; color: var(--primary-color); margin-bottom: 8px; }
-        .buy-button { display: block; width: 100%; padding: 9px; background-color: var(--primary-color); color: white; text-align: center; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: bold; cursor: pointer; margin-top: auto; transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; }
+        .swipe-item-info { padding: 10px 12px; background-color: var(--card-bg); flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; border-bottom-left-radius: var(--card-border-radius); border-bottom-right-radius: var(--card-border-radius); border-top: 1px solid var(--border-color); } /* Adjusted for mobile */
+        .swipe-item-info h3 { font-size: 0.95rem; margin-bottom: 3px; color: var(--text-primary); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* Adjusted for mobile */
+        .swipe-item-info .price { font-size: 0.9rem; font-weight: bold; color: var(--primary-color); margin-bottom: 6px; } /* Adjusted for mobile */
+        .buy-button { display: block; width: 100%; padding: 8px; background-color: var(--primary-color); color: white; text-align: center; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; margin-top: auto; transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; } /* Adjusted for mobile */
         .buy-button:hover { background-color: var(--primary-color-hover); transform: scale(1.04); box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); }
         .buy-button:active { transform: scale(0.98); background-color: var(--primary-color-darker); }
         .buy-button:focus-visible { outline: 2px solid var(--primary-color-hover); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color-hover) 30%, transparent); }
@@ -156,10 +185,20 @@
         .swipe-item.swiping-out-right { animation: swipeOutRightAnim var(--animation-speed-fast) forwards cubic-bezier(0.6, -0.28, 0.735, 0.045); }
         @keyframes swipeOutRightAnim { to { transform: translate(50vw, -50%) scale(0.7) rotateZ(20deg); opacity: 0; } }
 
-        .bottom-nav { display: flex; justify-content: space-around; align-items: center; padding: 12px 0 10px; background-color: var(--card-bg); border-top: 1px solid var(--border-color); min-height: 65px; flex-shrink: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-secondary); text-decoration: none; font-size: 0.75rem; cursor: pointer; padding: 5px 8px; transition: color 0.3s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .nav-item i { font-size: 1.5rem; margin-bottom: 4px; }
-        .nav-item.active, .nav-item:hover { color: var(--primary-color); transform: translateY(-4px) scale(1.05); }
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0 6px; /* Adjusted for mobile */
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            min-height: 55px; /* Adjusted for mobile */
+            flex-shrink: 0; /* CRITICAL: Prevent footer from shrinking */
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.15);
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; cursor: pointer; padding: 4px 6px; transition: color 0.3s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); } /* Adjusted for mobile */
+        .nav-item i { font-size: 1.3rem; margin-bottom: 2px; } /* Adjusted for mobile */
+        .nav-item.active, .nav-item:hover { color: var(--primary-color); transform: translateY(-3px) scale(1.05); } /* Adjusted for mobile */
         .nav-item:active { transform: translateY(-1px) scale(0.98); }
         .nav-item:focus-visible { outline: 2px solid var(--focus-outline-color); border-radius: 4px; color: var(--primary-color); }
         .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
@@ -203,7 +242,7 @@
 
     <div id="home-screen" class="app-screen">
         <header class="home-header">
-             <img src="logo.png" alt="SwipeBuy" class="logo" onerror="this.style.display='none'; this.parentElement.insertAdjacentHTML('afterbegin', '<h2 style=\'color: var(--primary-color); margin-right:15px; font-size:1.5rem; alt: SwipeBuy;\'>SwipeBuy</h2>');">
+             <img src="logo.png" alt="SwipeBuy" class="logo" onerror="this.style.display='none'; this.parentElement.insertAdjacentHTML('afterbegin', '<h2 style=\'color: var(--primary-color); margin-right:10px; font-size:1.4rem; alt: SwipeBuy;\'>SwipeBuy</h2>');">
             <div class="category-filter">
                 <label for="categorySelect" class="visually-hidden">Filter by category</label>
                 <select id="categorySelect" aria-label="Filter by category">
@@ -219,7 +258,7 @@
                 <input type="text" id="searchInput" placeholder="Search item..." aria-label="Search items">
                 <i class="fas fa-search" aria-hidden="true"></i>
             </div>
-            <button class="profile-icon" onclick="alert('Profile clicked!')" aria-label="View Profile">
+            <button type="button" class="profile-icon" onclick="alert('Profile clicked!')" aria-label="View Profile">
                 <i class="fas fa-user-circle" aria-hidden="true"></i>
             </button>
         </header>
@@ -268,7 +307,7 @@
         const SWIPE_THRESHOLD = 70;
         let swipeInitialized = false;
         let currentGrabbedItem = null;
-        let currentItemInitialX = 0; // Not strictly needed if drag applies transform on top of CSS
+        // let currentItemInitialX = 0; // Not strictly needed with current transform logic
         let isDragging = false;
         let animationFrameId = null;
 
@@ -289,7 +328,7 @@
         }
 
         function toggleAuthForms() {
-            const animationSpeed = getAnimationDuration('--animation-speed-medium', '0.45s');
+            const animationSpeed = getAnimationDuration('--animation-speed-medium');
             isLoginFormVisible = !isLoginFormVisible;
             const currentForm = isLoginFormVisible ? signupFormContainer : loginFormContainer;
             const nextForm = isLoginFormVisible ? loginFormContainer : signupFormContainer;
@@ -369,7 +408,7 @@
             itemEl.setAttribute('role', 'group');
             itemEl.setAttribute('aria-roledescription', 'product card');
             itemEl.setAttribute('aria-label', product.name);
-            itemEl.tabIndex = -1;
+            itemEl.tabIndex = -1; // Make it focusable programmatically, but not via sequential tab
             const mainImage = product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/400x400/CCCCCC/FFFFFF?Text=No+Image';
             itemEl.innerHTML = `
                 <div class="swipe-item-image-container">
@@ -395,7 +434,10 @@
                 element.style.transition = `transform ${duration}ms ${easing}, opacity ${duration}ms ease-out`;
                 if (transform !== undefined) element.style.transform = transform;
                 if (opacity !== undefined) element.style.opacity = opacity;
-                setTimeout(() => { resolve(); }, duration);
+                setTimeout(() => {
+                    // Don't reset transition globally here, it might interfere with other state-based transitions
+                    resolve();
+                }, duration);
             });
         }
 
@@ -404,6 +446,7 @@
             swipeContainer.innerHTML = '';
             const numProducts = products.length;
             if (numProducts === 0) return;
+
             const indicesToRender = new Set();
             if (numProducts === 1) { indicesToRender.add(0); }
             else if (numProducts === 2) { indicesToRender.add(0); indicesToRender.add(1); }
@@ -416,15 +459,18 @@
                     indicesToRender.add((currentItemIndex + 2) % numProducts);
                 }
             }
+
             const fragment = document.createDocumentFragment();
             let currentElToFocus = null;
+
             Array.from(indicesToRender).forEach(idx => {
                 const product = products[idx];
                 const itemEl = createSwipeItemElement(product, idx);
-                itemEl.classList.remove('current', 'prev', 'next', 'hidden-left', 'hidden-right');
+                itemEl.classList.remove('current', 'prev', 'next', 'hidden-left', 'hidden-right'); // Clear old states
+
                 if (idx === currentItemIndex) {
                     itemEl.classList.add('current');
-                    itemEl.tabIndex = 0;
+                    itemEl.tabIndex = 0; // Only current is sequentially focusable
                     currentElToFocus = itemEl;
                 } else if (numProducts > 1 && idx === (currentItemIndex - 1 + numProducts) % numProducts) {
                     itemEl.classList.add('prev');
@@ -440,10 +486,11 @@
                 fragment.appendChild(itemEl);
             });
             swipeContainer.appendChild(fragment);
+
             if (focusCurrent && currentElToFocus) {
-                setTimeout(() => currentElToFocus.focus(), 50);
+                setTimeout(() => currentElToFocus.focus(), 50); // Delay focus slightly
                 const cardId = `product-card-${currentElToFocus.dataset.productId}`;
-                currentElToFocus.id = cardId; // Ensure ID for aria
+                currentElToFocus.id = cardId;
                 swipeContainer.setAttribute('aria-activedescendant', cardId);
             }
             const currentProduct = products[currentItemIndex];
@@ -457,17 +504,21 @@
             if (products.length <= 1 && !fromKeyboard) return;
             const numProducts = products.length;
             const oldCurrentEl = swipeContainer.querySelector('.swipe-item.current');
+
             if (direction === 'next') {
                 currentItemIndex = (currentItemIndex + 1) % numProducts;
             } else if (direction === 'prev') {
                 currentItemIndex = (currentItemIndex - 1 + numProducts) % numProducts;
             }
-            renderSwipeItems(true); // CSS transitions handle the pop/shrink
-            if (fromKeyboard && oldCurrentEl) { // Animate out for keyboard for visual feedback
+
+            renderSwipeItems(true); // CSS transitions will handle the pop/shrink
+
+            if (fromKeyboard && oldCurrentEl) { // For keyboard, animate out the old item explicitly if needed
                 oldCurrentEl.classList.remove('current');
+                oldCurrentEl.tabIndex = -1;
                 if (direction === 'next') oldCurrentEl.classList.add('swiping-out-left');
                 else oldCurrentEl.classList.add('swiping-out-right');
-                // Optional: remove after CSS animation, if it's not part of the new render cycle
+                // The item will be removed on the next render if it's no longer in indicesToRender
             }
         }
 
@@ -498,9 +549,8 @@
 
         const onPointerUp = async (e) => {
             if (!isPointerDown || !currentGrabbedItem) {
-                if (currentGrabbedItem) currentGrabbedItem.classList.remove('grabbing', 'no-transition');
-                isPointerDown = false;
-                return;
+                if (currentGrabbedItem) { currentGrabbedItem.classList.remove('grabbing', 'no-transition'); }
+                isPointerDown = false; return;
             }
             currentGrabbedItem.classList.remove('grabbing', 'no-transition');
             isPointerDown = false;
@@ -518,10 +568,10 @@
                     transform: `translate(calc(-50% + ${targetX}), -60%) scale(0.7) rotateZ(${targetRotate}deg)`,
                     opacity: 0
                 }, 300, 'cubic-bezier(0.6, -0.28, 0.735, 0.045)');
-                navigateItems(direction);
+                navigateItems(direction); // This will re-render and remove the old item implicitly
             } else {
-                currentGrabbedItem.style.transform = '';
-                currentGrabbedItem.style.opacity = '';
+                currentGrabbedItem.style.transform = ''; // Reset to CSS defined transform for .current
+                currentGrabbedItem.style.opacity = ''; // Reset to CSS defined opacity for .current
             }
             currentGrabbedItem = null;
             swipeContainer.style.touchAction = 'pan-y';
@@ -562,12 +612,12 @@
         }
 
         window.onload = () => {
-            const splashDuration = getAnimationDuration('--animation-speed-splash', '1.8s');
+            const splashDuration = getAnimationDuration('--animation-speed-splash');
             setTimeout(() => showScreen(authScreen), splashDuration);
         };
 
         function getAnimationDuration(cssVarName, fallback = '0.35s') {
-            if (typeof window === 'undefined' || !document.documentElement) return parseFloat(fallback.replace('s',''))*1000; // Fallback for environments without DOM
+            if (typeof window === 'undefined' || !document.documentElement) return parseFloat(fallback.replace('s',''))*1000;
             const rootStyle = getComputedStyle(document.documentElement);
             const durationStr = rootStyle.getPropertyValue(cssVarName).trim() || fallback;
             return parseFloat(durationStr.replace('s', '')) * 1000;
